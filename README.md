@@ -8,7 +8,7 @@ The system connects to the [Featherweight Raven](https://www.featherweightaltime
 
 Rosetta does not provide the ability to control or guide rockets and is strictly a one way real time telemetry system.  
 
-![Dashboard](https://github.com/jliphard/rosetta/main/images/dash.png)
+![Dashboard](https://github.com/jliphard/rosetta/blob/main/images/dash.png)
 
 ## System Overview
 
