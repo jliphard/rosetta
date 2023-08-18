@@ -1,0 +1,17 @@
+{
+  "name": "openc3-cosmos-hub-1.0.54.gem__20230818205749",
+  "variables": {
+    "data_target_name": "M"
+  },
+  "plugin_txt_lines": [
+    "VARIABLE data_target_name M",
+    "",
+    "TARGET HUB <%= data_target_name %>",
+    "",
+    "INTERFACE <%= data_target_name %>_TCP tcpip_client_interface.rb host.docker.internal 23200 23200 10.0 10.0",
+    "",
+    "MAP_TARGET <%= data_target_name %>"
+  ],
+  "needs_dependencies": false,
+  "updated_at": 1692392269698827380
+}

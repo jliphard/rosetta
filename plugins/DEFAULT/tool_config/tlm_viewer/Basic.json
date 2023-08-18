@@ -1,0 +1,42 @@
+[
+  {
+    "screen": "ATTITUDE",
+    "target": "M",
+    "floated": false,
+    "top": 0,
+    "left": 0,
+    "zIndex": 0
+  },
+  {
+    "screen": "MAIN",
+    "target": "M",
+    "floated": false,
+    "top": 0,
+    "left": 0,
+    "zIndex": 0
+  },
+  {
+    "screen": "NAV",
+    "target": "M",
+    "floated": false,
+    "top": 0,
+    "left": 0,
+    "zIndex": 0
+  },
+  {
+    "screen": "RADIO",
+    "target": "M",
+    "floated": false,
+    "top": 0,
+    "left": 0,
+    "zIndex": 0
+  },
+  {
+    "screen": "PLOT",
+    "target": "M",
+    "floated": false,
+    "top": 0,
+    "left": 0,
+    "zIndex": 0
+  }
+]
