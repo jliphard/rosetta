@@ -1,0 +1,63 @@
+# describes the device/packet data in the frontend Packet Viewer
+TELEMETRY M GPS LITTLE_ENDIAN "GPS Telemetry Featherweight"
+  # Keyword      Name       BitSize Type   ID Description
+  APPEND_ID_ITEM ID         64      UINT   12 "Featherweight GPS Telemetry Preamble"
+  APPEND_ITEM    TIME       64      FLOAT     "Mission Time (s)" 
+    UNITS Seconds s
+  APPEND_ITEM    GPS_ALT_1  64      INT       "Altitude (ft)"    
+    UNITS Feet ft
+    # LIMITS <LIMITS SET> <PERSISTENCE> <ENABLED/DISABLED> <RED LOW LIMIT> <YELLOW LOW LIMIT> <YELLOW HIGH LIMIT> <RED HIGH LIMIT> <GREEN LOW LIMIT (Optional)> <GREEN HIGH LIMIT (Optional)>
+    LIMITS DEFAULT 3 ENABLED -200.0 -30.0 200.0 300.0
+  APPEND_ITEM    LAT_1      64      FLOAT     "Latitude"
+  APPEND_ITEM    LON_1      64      FLOAT     "Longitude"
+  APPEND_ITEM    GPS_HOR_V      32      INT       "Horizontal Velocity"
+  APPEND_ITEM    GPS_HOR_H      32      INT       "Horizontal Heading"
+  APPEND_ITEM    GPS_VER_V      32      INT       "Vertical Velocity"
+  APPEND_ITEM    SAT_F      32      UINT       "Type of fix (none, 2D, 3D)"
+    STATE NOFIX 1 RED
+    STATE 2D    2 YELLOW
+    STATE 3D    3 GREEN
+  APPEND_ITEM    SAT_T      32      UINT       "Total sats in view"
+      LIMITS DEFAULT 3 ENABLED 5 9 30 30
+  APPEND_ITEM    SAT_24     32      UINT       "Sats > 24 dB"
+  APPEND_ITEM    SAT_32     32      UINT       "Sats > 32 dB"
+  APPEND_ITEM    SAT_40     32      UINT       "Sats > 40 dB"
+
+TELEMETRY M GPSH LITTLE_ENDIAN "GPS Health Telemetry Featherweight"
+  # Keyword      Name       BitSize Type   ID Description
+  APPEND_ID_ITEM ID         64      UINT   13 "Featherweight GPS Health Telemetry Preamble"
+  APPEND_ITEM    TIME       64      FLOAT     "Mission Time (s)" 
+    UNITS Seconds s
+  APPEND_ITEM    GS_RSSI      32      INT    "RSSI GS"    
+    LIMITS DEFAULT 3 ENABLED -90 -75 0 0
+  APPEND_ITEM    TRK_RSSI      32      INT   "RSSI Tracker"    
+    LIMITS DEFAULT 3 ENABLED -90 -75 0 0
+  APPEND_ITEM    TRK_BATT      64      FLOAT       "GPS Battery V"
+    UNITS Voltage V    
+    LIMITS DEFAULT 3 ENABLED 3.3 3.6 4.2 4.3
+
+TELEMETRY M RAVEN LITTLE_ENDIAN "Raven Telemetry"
+  # Keyword      Name     BitSize Type   ID Description
+  APPEND_ID_ITEM ID       64      UINT   14 "Raven Telemetry Preamble"
+  APPEND_ITEM    TIME     64      FLOAT     "Mission Time (s)" 
+    UNITS Seconds s
+  APPEND_ITEM    HG_1     32      INT       "HG 1"  
+  APPEND_ITEM    HG_2     32      INT       "HG 2"  
+  APPEND_ITEM    HG_3     32      INT       "HG 3" 
+  APPEND_ITEM    PG_1     32      INT       "PG 1"  
+  APPEND_ITEM    PG_2     32      INT       "PG 2"  
+  APPEND_ITEM    PG_3     32      INT       "PG 3"    
+  APPEND_ITEM    UN_1     32      INT       "Unknown 1"   
+  APPEND_ITEM    UN_2     32      INT       "Unknown 2"    
+  APPEND_ITEM    RAVEN_BATT     64      FLOAT     "Raven Battery V"
+    UNITS Voltage V    
+    LIMITS DEFAULT 3 ENABLED 7.0 7.3 8.4 8.4
+  APPEND_ITEM    ANG_1   32      INT       "Angle 1"  
+  APPEND_ITEM    ANG_2   32      INT       "Angle 2"  
+  APPEND_ITEM    RAVEN_VEL     32      INT       "Velocity"    
+  APPEND_ITEM    RAVEN_AGL     32      INT       "AGL"
+    UNITS Feet ft   
+  APPEND_ITEM    RAVEN_RSSI    32      INT       "RSSI" 
+    LIMITS DEFAULT 3 ENABLED -90 -75 0 0
+  APPEND_ITEM    RAVEN_SNR     32      INT       "SNR"  
+    LIMITS DEFAULT 3 ENABLED 2 4 15 15
