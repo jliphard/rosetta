@@ -4,7 +4,7 @@ Rosetta is designed to move data from amateur rocket flight controllers and disp
 
 Rosetta currently understands data from [Featherweight Raven](https://www.featherweightaltimeters.com/raven-altimeter.html) and [Eggtimer Quantum](http://eggtimerrocketry.com/eggtimer-quantum/) flight controllers as well as the [Featherweight GPS Tracker](https://www.featherweightaltimeters.com/featherweight-gps-tracker.html), but can easily be modified to transmit, receive, and display data from essentially all known flight computers provided they expose the data somehow. 
 
-The system connects to the [Featherweight Raven](https://www.featherweightaltimeters.com/raven-altimeter.html) using an Arm Cortex-M0 32-bit SAMD21 [Arduino MKRWAN 1310](https://docs.arduino.cc/hardware/mkr-wan-1310) in USB host mode, and connects to the [Eggtimer Quantum](http://eggtimerrocketry.com/eggtimer-quantum/) via serial UART. The system also parses tracking/GPS data from the [Featherweight GPS Tracker](https://www.featherweightaltimeters.com/featherweight-gps-tracker.html).
+The system connects to the Featherweight Raven using an Arm Cortex-M0 32-bit SAMD21 [Arduino MKRWAN 1310](https://docs.arduino.cc/hardware/mkr-wan-1310) in USB host mode, and connects to the Eggtimer Quantum via serial UART. The system also parses tracking/GPS data from the Featherweight GPS Tracker.
 
 Rosetta does not provide the ability to control or guide rockets and is strictly a one way real time telemetry system.  
 
@@ -12,7 +12,7 @@ Rosetta does not provide the ability to control or guide rockets and is strictly
 
 ## System Overview
 
-Ok, so if you think building cubesats is fun and relaxing or it's you, Joe or Xyla, this will all be self explanatory - have fun. For many others, be advised, getting this all to run involves intermediate familiarity with LoRa, micro controllers, USB, RF, python, TCP sockets, Docker, and Cosmos/OpenC3.
+Ok, so if you think building cubesats is fun and relaxing or it's you, Joe or Xyla, this will all be self explanatory - have fun. For many others, be advised, getting this all to run involves intermediate familiarity with LoRa, microcontrollers, USB, RF, python, TCP sockets, Docker, and Cosmos/OpenC3.
 
 ### 1. Raven Telemetry 
 
@@ -30,7 +30,7 @@ The Raven streams telemetry through Bluetooth (before launch) and through USB (c
 
 An Arduino MKRWAN 1310 is configured to USB Host mode and connected to the Raven via a custom powered straight through USB cable. The 1310 talks to the Raven and re-transmits all data using a 20 dB LoRa down-link with sender/receiver IDs in the LoRa packet. 
 
-To construct the cable, cut two USB cables and connect the male ends. Solders all four wires to their respective colors (e.g. red to red) - do not cross the data lines - this is not a serial cable. Provide regulated +5V to the red (power) wire from your rocket's +5V power bus. Customize the LoRa frequency, sender, and destination addresses. Flash the Arduino MKRWAN 1310 with `firmware/Arduino/RosettaSend.ino`. 
+To construct the cable, cut two USB cables and wire together the male ends. Solder all four wires to their respective colors (e.g. red to red) - do not cross the data lines - this is not a serial cable. Provide regulated +5V to the red (power) wire from your rocket's +5V power bus. Customize the LoRa frequency, sender, and destination addresses. Flash the Arduino MKRWAN 1310 with `firmware/Arduino/RosettaSend.ino`. 
 
 ```c
 // RosettaSend.ino
@@ -47,7 +47,7 @@ byte destination = 0xE5;
 
 **Important**
 
-Since you will be using the USB to connect to the Raven, you will need to double-press the RST button to get the 1310 back into bootloader mode to flash it via the Arduino IDE.
+Since you will be programming the USB to connect to the Raven, you will need to double-press the RST button on the 1310 to get it back into bootloader mode to flash it via the Arduino IDE.
 
 **Important**
 
@@ -76,7 +76,7 @@ extern Uart Serial2;
 
 The Eggtimer Quantum streams telemetry through serial UART. The data format is [well documented](http://eggtimerrocketry.com/wp-content/uploads/2021/05/Eggtimer-Telemetry-Data-Format.pdf). The 1310 receives serial on pins 0 and 1 and re-transmits everything to ground.
 
-**Fun fact**: Interestingly, the Quantum switches serial data rate after initialization to 9600 baud. Also, the Quantum does not need to be armed to transmit data. 
+**Fun fact**: Interestingly, the Quantum switches serial data rate after initialization to 9600 baud. Also, the Quantum does not need to be armed to transmit (some, basic) data. 
 
 ### 4. Ground Station to Serial
 
@@ -110,8 +110,6 @@ Sending Type 13 T: 198.28300000000002 RSSI_1: -66 RSSI_2: -76 B: 4.104
 
 Parsing Tracker: 203 0000 00 00 000319.311 000207 -0.453758 -90.2659 +0000 +019 +0000 3 18 16 13 8 000_00_00 000_00_00 000_00_00 000_00_00 000_00_00 3826
 Sending Type 12 T: 199.311 lat: -0.453758 lon: -90.2659 alt: 207
-
-...
 ```
 
 ### 6. TCP to COSMOS/OpenC3

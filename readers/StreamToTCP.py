@@ -230,7 +230,7 @@ def pack_FW_GPS(data):
     payload = struct.pack("ididdiiiiiiii", 12, time_s, altitude_ft, lat, lon, \
         hv, hdir, vv, fix, satTotal, sat24, sat32, sat40)
     
-    print("Sending Type 12 T:", time_s, "lat:", lat, "lon:", lon, "agl:", altitude_ft)
+    print("Sending Type 12 T:", time_s, "lat:", lat, "lon:", lon, "alt:", altitude_ft)
 
     #print(payload)
 
