@@ -28,7 +28,9 @@ The Raven streams telemetry through Bluetooth (before launch) and through USB (c
 
 ### 2. Raven->LoRa Transmission
 
-An Arduino MKRWAN 1310 is configured to USB Host mode and connected to the Raven via a custom powered straight through USB cable. The 1310 talks to the Raven and re-transmits all data using a 20 dB LoRa down-link with sender/receiver IDs in the LoRa packet. To construct the cable, cut two USB cables and connect all four wires to their colors - do not cross the data lines - this is not a serial cable. Provide regulated +5V to the red (power) wire from your rocket's +5V power bus. Customize the LoRa frequency, sender, and destination addresses. Flash the Arduino MKRWAN 1310 with `firmware/Arduino/RosettaSend.ino`. 
+An Arduino MKRWAN 1310 is configured to USB Host mode and connected to the Raven via a custom powered straight through USB cable. The 1310 talks to the Raven and re-transmits all data using a 20 dB LoRa down-link with sender/receiver IDs in the LoRa packet. 
+
+To construct the cable, cut two USB cables and connect the male ends. Solders all four wires to their respective colors (e.g. red to red) - do not cross the data lines - this is not a serial cable. Provide regulated +5V to the red (power) wire from your rocket's +5V power bus. Customize the LoRa frequency, sender, and destination addresses. Flash the Arduino MKRWAN 1310 with `firmware/Arduino/RosettaSend.ino`. 
 
 ```c
 // RosettaSend.ino
@@ -42,6 +44,10 @@ long frequency   = 910700000;
 byte myAddress   = 0xBC;  
 byte destination = 0xE5;
 ```
+
+**Important**
+
+Since you will be using the USB to connect to the Raven, you will need to double-press the RST button to get the 1310 back into bootloader mode to flash it via the Arduino IDE.
 
 **Important**
 
@@ -78,12 +84,12 @@ The LoRa telemetry is received by a [Heltec Wireless Stick v3](https://heltec.or
 
 ### 5. Ground Station Data to TCP
 
-Sadly, Docker makes it very hard to access local serial/USB data and COSMOS/OpenC3 uses Docker. Yes, it _is_ possible but that's a whole other project. So, Rosetta collects the data from serial using a simple python script, clean up the data, and pushes them to a web socket at `127.0.0.1:23200`. 
+Sadly, Docker makes it very hard to access local serial/USB data and COSMOS/OpenC3 uses Docker. Yes, it _is_ possible but that's a whole other project. So, Rosetta collects the data from serial using a simple python script, cleans up the data, and pushes them to a web socket at `127.0.0.1:23200`. 
 
 To run the serial->TCP stream:
 
 ```shell
-$ python3 StreamToTCP.py
+$ python3 ./readers/StreamToTCP.py
 ```
 
 You will need to set your ports based on `ls /dev/cu.usb*`:
@@ -96,9 +102,21 @@ ser2 = serial.Serial('/dev/cu.usbserial-0001', baudrate=115200)
 print (ser2.name)
 ```
 
+If everything is set up correctly, your LoRa radios should be blinking as they receive data and you should see parsed telemetry packets scroll past on your screen:
+
+```shell
+Parsing T_Health: 202 0000 00 00 000318.283 134 135 -066 +05 132 133 -076 +7 10 919000000 4104 +0 9478
+Sending Type 13 T: 198.28300000000002 RSSI_1: -66 RSSI_2: -76 B: 4.104
+
+Parsing Tracker: 203 0000 00 00 000319.311 000207 -0.453758 -90.2659 +0000 +019 +0000 3 18 16 13 8 000_00_00 000_00_00 000_00_00 000_00_00 000_00_00 3826
+Sending Type 12 T: 199.311 lat: -0.453758 lon: -90.2659 alt: 207
+
+...
+```
+
 ### 6. TCP to COSMOS/OpenC3
 
-Start Docker and:
+Start Docker, copy the `example.env` to `.env` (`cp example.env .env`), and:
 
 ```shell
 $ ./openc3.sh run
