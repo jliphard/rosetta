@@ -30,7 +30,7 @@ The Raven streams telemetry through Bluetooth (before launch) and through USB (c
 
 An Arduino MKRWAN 1310 is configured to USB Host mode and connected to the Raven via a custom powered straight through USB cable. The 1310 talks to the Raven and re-transmits all data using a 20 dB LoRa down-link with sender/receiver IDs in the LoRa packet. 
 
-To construct the cable, cut two USB cables and wire together the male ends. Solder all four wires to their respective colors (e.g. red to red) - do not cross the data lines - this is not a serial cable. Provide regulated +5V to the red (power) wire from your rocket's +5V power bus. Customize the LoRa frequency, sender, and destination addresses. Flash the Arduino MKRWAN 1310 with `firmware/Arduino/RosettaSend.ino`. 
+To construct the cable, cut two USB cables and wire together the male ends, giving you a USB cable with two male ends. Solder all four wires to their respective colors (e.g. red to red) - do not cross the data lines - this is not a serial cable. Provide regulated +5V to the red (power) wire from your rocket's +5V power bus. Customize the LoRa frequency, sender, and destination addresses. Flash the Arduino MKRWAN 1310 with `firmware/Arduino/RosettaSend.ino`. 
 
 ```c
 // RosettaSend.ino
