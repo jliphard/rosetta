@@ -1,40 +1,40 @@
 [
   {
-    "screen": "ATTITUDE",
-    "target": "M",
-    "floated": false,
-    "top": 0,
-    "left": 0,
-    "zIndex": 0
-  },
-  {
-    "screen": "MAIN",
-    "target": "M",
-    "floated": false,
-    "top": 0,
-    "left": 0,
-    "zIndex": 0
-  },
-  {
-    "screen": "NAV",
-    "target": "M",
-    "floated": false,
-    "top": 0,
-    "left": 0,
-    "zIndex": 0
-  },
-  {
     "screen": "RADIO",
     "target": "M",
-    "floated": false,
-    "top": 0,
-    "left": 0,
+    "floated": true,
+    "top": 110,
+    "left": 1472,
     "zIndex": 0
   },
   {
     "screen": "PLOT",
     "target": "M",
-    "floated": false,
+    "floated": true,
+    "top": 111,
+    "left": 4,
+    "zIndex": 0
+  },
+  {
+    "screen": "NAV",
+    "target": "M",
+    "floated": true,
+    "top": 111,
+    "left": 1245,
+    "zIndex": 0
+  },
+  {
+    "screen": "MAIN",
+    "target": "M",
+    "floated": true,
+    "top": 1,
+    "left": 1160,
+    "zIndex": 0
+  },
+  {
+    "screen": "ATTITUDE",
+    "target": "M",
+    "floated": true,
     "top": 0,
     "left": 0,
     "zIndex": 0
