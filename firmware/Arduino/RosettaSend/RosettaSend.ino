@@ -19,18 +19,10 @@ No warranties, use at your own risk.
 #include <usbhub.h>
 
 #include "wiring_private.h"
+
 #define SerialDebug Serial1
 
-// CHANGE ME!!!
-// change this to something quiet - e.g. this is Channel 42 (910.700 MHz)
-// See this table for US Frequencies
-// https://www.baranidesign.com/faq-articles/2019/4/23/lorawan-usa-frequencies-channels-and-sub-bands-for-iot-devices
-
-long frequency   = 910700000; 
-byte myAddress   = 0xBC;  
-byte destination = 0xE5;
-
-int counterRaven = 0;
+int counterRav = 0;
 int counterEgg = 0;
 int counterMain = 0;
 
@@ -39,14 +31,18 @@ uint16_t rcvd = 0;
 uint8_t rcode;
 uint32_t state;
 
-bool haveNewRavenData = false;
+bool haveNewRavData = false;
 bool haveNewEggData = false;
 
-char raven_dp[200]       = "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
-char raven_dp_final[200] = "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
+char rav_dp[200]       = "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
+char rav_dp_final[200] = "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
 
 String EggData = "";
-String RavenData = "";
+String RavData = "";
+
+long frequency   = 910700000; // change this to something quiet - e.g. this is Channel 42 (910.700 MHz)
+byte myAddress   = 0xBC;  
+byte destination = 0xE5;
 
 class ACMAsyncOper : public CDCAsyncOper
 {
@@ -57,9 +53,7 @@ class ACMAsyncOper : public CDCAsyncOper
 uint8_t ACMAsyncOper::OnInit(ACM *pacm)
 {
 
-  uint8_t rcode = pacm->SetControlLineState(0);
-  // Yup, "0" is the one
-  // Sigh - not documented...
+  uint8_t rcode = pacm->SetControlLineState(0); // Yup, "0" is the one
 
   if (rcode) {
     ErrorMessage<uint8_t>(PSTR("SetControlLineState"), rcode);
@@ -118,36 +112,62 @@ void setup() {
   // 20 is the max, and you may not get it, depending...
   LoRa.setTxPower(20);
 
+  // We want to increase data transmission reliability at the expense of data rate.
+  // https://medium.com/home-wireless/testing-lora-radios-with-the-limesdr-mini-part-2-37fa481217ff
+  // Lowest possible bandwidth
+  // Highest possible Spreading Factor
+  // Maximize coding rate
+
+  // LoRa modulation has a total of six spreading factors (SF7 to SF12). 
+  // The larger the spreading factor used, the farther the signal will be 
+  // able to travel and still be received without errors by the RF receiver.
+  LoRa.setSpreadingFactor(9); // 6 to 12, defaults to 7
+  //  53 bytes SF9 125 kHz
+  // 125 bytes SF8 125 kHz
+
+  //https://lora-developers.semtech.com/documentation/tech-papers-and-guides/lora-and-lorawan/#:~:text=LoRa%20modulation%20has%20a%20total,errors%20by%20the%20RF%20receiver.
+  // For a fixed SF, a narrower bandwidth will increase sensitivity as the bit rate is reduced.
+  LoRa.setSignalBandwidth(125E3);
+  // 7.8E3, 10.4E3, 15.6E3, 20.8E3, 31.25E3, 41.7E3, 62.5E3, 125E3, 250E3, and 500E3.
+  // defaults to 125E3.
+
+  // The Code Rate is the degree of redundancy implemented by the forward error correction (FEC) used to detect errors and correct them. 
+  // Supported values are between 5 and 8, these correspond to coding rates of 4/5 and 4/8. The coding rate numerator is fixed at 4.
+  // Coding Rate | CRC Rate | Overhead Ratio
+  // ----------------------------------------
+  // 1           |  4/5     |   1.25
+  // 2           |  4/6     |   1.5
+  // 3           |  4/7     |   1.75
+  // 4           |  4/8     |   2
+  LoRa.setCodingRate4(8);
 }
 
 void loop() {
 
-  SerialDebug.print("\nLoop: ");
-  SerialDebug.println(counterMain);
-  counterMain++;
+  SerialDebug.println("\nLoop: " + String(counterMain++));
 
   haveNewEggData = false;
-  haveNewRavenData = false;
+  haveNewRavData = false;
+
   EggData = "";
+  RavData = "";
 
   digitalWrite(LED_BUILTIN, HIGH);
-  delay(250);
 
-  digitalWrite(LED_BUILTIN, LOW);
   delay(250);
 
   while (LoRa.beginPacket() == 0) {
     // doing anything else is pointless if the radio is not ready...
-    SerialDebug.println("Waiting for LoRa radio...");
+    //SerialDebug.println("Waiting for LoRa radio...");
     delay(100);
   }
   
   if(Serial2.available() > 0) {
     EggData = Serial2.readString();
     if(EggData.length() > 0) {
+      EggData = "E:" + String(counterEgg) + ":" + EggData;
       counterEgg++;
       haveNewEggData = true;
-      EggData = "EGG " + EggData;
     }
   }
 
@@ -185,7 +205,7 @@ void loop() {
   if( AcmSerial.isReady() ) {
 
     int payloadLength = 0;
-    bool haveRavenData = false;
+    bool haveRavData = false;
     int i, j;
 
     rcvd = 64; // always reset rcvd to max USB packet length
@@ -194,27 +214,32 @@ void loop() {
       ErrorMessage<uint8_t>(PSTR("Ret"), rcode);
 
     if( rcvd > 0 ) {
-      SerialDebug.print("Raven Part 1: ");
-      SerialDebug.write(buf, rcvd);
-      SerialDebug.println("");
-      
-      // get the first Raven USB packet
+      //SerialDebug.print("Raven Part 1: ");
+      //SerialDebug.write(buf, rcvd);
+      //SerialDebug.println("");
+
+      // cut off the header and date
       if (buf[0] == '@' && buf[2] == 'B') {
-        haveRavenData = true;
-        int skip = 26;
-        for (i = 0, j = skip; j < rcvd; j++) {
-          if (isAlpha(buf[j]) || buf[j] == ':') { 
-            // skip letters and :
+        haveRavData = true;
+        //int skip = 26; //skip @ BLR_STAT 189 2023 08 20 
+        int j = 0;
+        while (buf[j] != ':') j++;
+        int start_parse = j + 1;
+        for (i = 0, j = start_parse; j < rcvd; j++) {
+          if (isAlpha(buf[j])) { 
+            // skip letters
+          } else if (buf[j] == ':') {
+            // replace with a space 
+            rav_dp[i++] = ' ';
           } else {
-            raven_dp[i++] = buf[j];
+            rav_dp[i++] = buf[j];
           }
         }
         payloadLength = i;
       }
-
     }
 
-    if( haveRavenData ) {
+    if( haveRavData ) {
       // get the second Raven USB packet
       rcvd = 64;
       rcode = AcmSerial.RcvData(&rcvd, (uint8_t *)buf);
@@ -222,15 +247,18 @@ void loop() {
         ErrorMessage<uint8_t>(PSTR("Ret"), rcode);
 
       if( rcvd > 0 ) {
-        SerialDebug.print("Raven Part 2: ");
-        SerialDebug.write(buf, rcvd);
-        SerialDebug.println("");
+        //SerialDebug.print("Raven Part 2: ");
+        //SerialDebug.write(buf, rcvd);
+        //SerialDebug.println("");
 
         for (i = payloadLength, j = 0; j < rcvd; j++) {
-          if (isAlpha(buf[j]) || buf[j] == ':') {
-            // skip letters and :
+          if (isAlpha(buf[j])) { 
+            // skip letters
+          } else if (buf[j] == ':') {
+            // replace with a space 
+            rav_dp[i++] = ' ';
           } else {
-            raven_dp[i++] = buf[j];
+            rav_dp[i++] = buf[j];
           }
         }
 
@@ -244,43 +272,89 @@ void loop() {
         ErrorMessage<uint8_t>(PSTR("Ret"), rcode);
 
       if( rcvd > 0 ) {
-        SerialDebug.print("Raven Part 3: ");
-        SerialDebug.write(buf, rcvd);
-        SerialDebug.println("");
+        //SerialDebug.print("Raven Part 3: ");
+        //SerialDebug.write(buf, rcvd);
+        //SerialDebug.println("");
+
+        // SerialDebug.print("Raven Part 3 raw: ");
+        // for (j = 0; j < rcvd; j++) {
+        //   SerialDebug.print(buf[j], DEC);
+        // }
+        // SerialDebug.println("");
 
         for (i = payloadLength, j = 0; j < rcvd; j++) {
-          if (buf[j] == 'C' && buf[j+1] == 'R') {
-            j += 5;
-            // copy the length 4 CRC
-            raven_dp[i++] = buf[j++];
-            raven_dp[i++] = buf[j++];
-            raven_dp[i++] = buf[j++];
-            raven_dp[i++] = buf[j++];
-          } else if (isAlpha(buf[j]) || buf[j] == ':') {
-            // skip letters and :
+          if (isAlpha(buf[j])) { 
+            // skip letters
+          } else if (buf[j] == ':') {
+            // replace with a space 
+            rav_dp[i++] = ' ';
           } else {
-            raven_dp[i++] = buf[j];
+            rav_dp[i++] = buf[j];
           }
         }
 
         payloadLength = i;
 
+        // skip runs of whitespace
         for (i = 0, j = 0; j < payloadLength; j++) {
-          if (raven_dp[j] == ' ' && raven_dp[j+1] == ' ') {
-            // skip runs of whitespace
+          if (rav_dp[j] == ' ' && rav_dp[j+1] == ' ') {
           } else {
-            raven_dp_final[i++] = raven_dp[j];
+            rav_dp_final[i++] = rav_dp[j];
           }
         }
+        // chop off spurious junk from previous data
+        // the last two characters are always 1310 aka CR and LF
+        rav_dp_final[i-2] = '\0';
 
-        // the -1 chops off a spurious CR
-        raven_dp_final[i-1] = '\0';
+        //SerialDebug.print("Ready to parse:");
+        //SerialDebug.println(String(rav_dp_final));
 
-        RavenData = "RAV " + String(raven_dp_final);
+        // parse the string
+        char *token;
+        const char *delimiter = " ";
+        int tN = 0;
         
-        counterRaven++;
-        haveNewRavenData = true;
+        token = strtok(rav_dp_final, delimiter);
+        int minutes = atoi(token);
 
+        float seconds;
+        int accel400;
+        int accel16;
+        int roll;
+        int batt;
+        int vel;
+        int agl;
+
+        while (token != NULL) {
+          tN++;
+          //SerialDebug.print(tN);
+          //SerialDebug.println(token);
+          token = strtok(NULL, delimiter);
+          if (tN == 1) 
+            seconds = atof(token);
+          else if (tN == 2) 
+            accel400 = atoi(token);
+          else if (tN == 5) 
+            accel16 = atoi(token);
+          else if (tN == 10) 
+            batt = atoi(token);
+          else if (tN == 11) 
+            roll = atoi(token);
+          else if (tN == 16) 
+            vel = atoi(token);
+          else if (tN == 17) 
+            agl = atoi(token);
+        }
+
+        int time = (minutes * 60 + seconds) * 10.0; // convert time to seconds * 10 to preserve 10th ms
+
+        // construct the final data string
+
+        char buffer[100];
+        sprintf(buffer, "R:%d:%d:%d:%d:%d:%d:%d:%d\0", counterRav, time, accel400, accel16, batt, roll, vel, agl);
+        RavData = String(buffer);
+        counterRav++;
+        haveNewRavData = true;
       }
 
     } 
@@ -291,35 +365,28 @@ void loop() {
 
   digitalWrite(LED_BUILTIN, LOW);
 
-  if(haveNewRavenData) {
-    SerialDebug.print("New Raven Data: ");
-    SerialDebug.println(String(raven_dp_final));
+  if(haveNewRavData) {
+    SerialDebug.println("Final Rav Data: " + RavData + " Length: " + RavData.length());
   }
 
   if(haveNewEggData) {
-    SerialDebug.print("New Eggtimer Data: ");
-    SerialDebug.println(EggData);
+    SerialDebug.println("Final Egg Data: " + EggData + " Length: " + EggData.length());
   }
-  
-  if (LoRa.beginPacket() == 1 && (haveNewRavenData || haveNewEggData)) {
-    SerialDebug.print("LORA: Sending packet: ");
-    SerialDebug.println(counterRaven);
-    
-    // Each packet can contain up to 255 bytes.
-    LoRa.beginPacket();
-    LoRa.write(destination);    // write a destination char            
-    LoRa.write(myAddress);      // my sender ID  
-    if (haveNewRavenData) {
-      LoRa.print(RavenData);
+
+  if (haveNewRavData || haveNewEggData) {
+    int LoRaState = LoRa.beginPacket();
+    if (LoRaState == 1) {
+      //SerialDebug.print("LORA: Sending packet: ");
+      //LoRa.beginPacket();
+      LoRa.write(destination);          
+      if (haveNewRavData)
+        LoRa.print(RavData);
+      if (haveNewEggData)
+        LoRa.print(EggData);
+      LoRa.endPacket(true);
+    } else if (LoRaState == 0) {
+      SerialDebug.println("LORA DATA LOSS: Radio not ready");
     }
-    if (haveNewEggData) {
-      LoRa.print(EggData);
-    }
-    LoRa.print(counterRaven); 
-    LoRa.print(counterEgg); 
-    LoRa.endPacket(true);       // true = async / non-blocking mode
-  } else if (LoRa.beginPacket() == 0 && haveNewRavenData) {
-    SerialDebug.println("LORA DATA LOSS: Radio not ready for Raven payload");
   }
 
 }

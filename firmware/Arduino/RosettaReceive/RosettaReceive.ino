@@ -16,19 +16,17 @@ No warranties, use at your own risk.
 #include <Wire.h>  
 #include "HT_SSD1306Wire.h"
 
-// CHANGE ME!!!
 #define RF_FREQUENCY                                910700000 // Hz
 byte myAddress     = 0xE5;
-byte correctSender = 0xBC;  
 
 #define LORA_BANDWIDTH                              0         // [0: 125 kHz,
                                                               //  1: 250 kHz,
                                                               //  2: 500 kHz,
                                                               //  3: Reserved]
 
-#define LORA_SPREADING_FACTOR                       7         // [SF7..SF12]
+#define LORA_SPREADING_FACTOR                       9         // [SF7..SF12]
 
-#define LORA_CODINGRATE                             1         // [1: 4/5,
+#define LORA_CODINGRATE                             4         // [1: 4/5,
                                                               //  2: 4/6,
                                                               //  3: 4/7,
                                                               //  4: 4/8]
@@ -61,7 +59,7 @@ SSD1306Wire  factory_display(0x3c, 500000, SDA_OLED, SCL_OLED, GEOMETRY_64_32, R
 void setup() {
     
     Serial.begin(115200);
-    Serial.println("Hello!");
+    Serial.println("Hello from LoRa receive!");
     
     VextON();
 	  delay(100);
@@ -130,9 +128,9 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
     
     //Serial.printf("Header Bytes: %d %d\n",payload[0],payload[1]);
     
-    if (payload[0] == myAddress && payload[1] == correctSender) {
+    if (payload[0] == myAddress) {
       // this payload is for us
-      Serial.printf("\"%s\" rssi %d, length %d, SNR: %d\n", rxpacket, Rssi, rxSize, snr);
+      Serial.printf("%s:%d:%d:%d\n", rxpacket, Rssi, rxSize, snr);
       factory_display.clear();
       factory_display.drawString(0, 9, rxpacket);
       factory_display.display();
