@@ -39,21 +39,15 @@ TELEMETRY M GPSH LITTLE_ENDIAN "GPS Health Telemetry Featherweight"
 TELEMETRY M RAVEN LITTLE_ENDIAN "Raven Telemetry"
   # Keyword      Name     BitSize Type   ID Description
   APPEND_ID_ITEM ID       64      UINT   14 "Raven Telemetry Preamble"
+  APPEND_ITEM    COUNTER  32      INT       "Packet Counter"  
   APPEND_ITEM    TIME     64      FLOAT     "Mission Time (s)" 
     UNITS Seconds s
-  APPEND_ITEM    HG_1     32      INT       "HG 1"  
-  APPEND_ITEM    HG_2     32      INT       "HG 2"  
-  APPEND_ITEM    HG_3     32      INT       "HG 3" 
-  APPEND_ITEM    PG_1     32      INT       "PG 1"  
-  APPEND_ITEM    PG_2     32      INT       "PG 2"  
-  APPEND_ITEM    PG_3     32      INT       "PG 3"    
-  APPEND_ITEM    UN_1     32      INT       "Unknown 1"   
-  APPEND_ITEM    UN_2     32      INT       "Unknown 2"    
-  APPEND_ITEM    RAVEN_BATT     64      FLOAT     "Raven Battery V"
+  APPEND_ITEM    R_BATT   64      FLOAT     "Raven Battery V"
     UNITS Voltage V    
     LIMITS DEFAULT 3 ENABLED 7.0 7.3 8.4 8.4
-  APPEND_ITEM    ANG_1   32      INT       "Angle 1"  
-  APPEND_ITEM    ANG_2   32      INT       "Angle 2"  
+  APPEND_ITEM    HG_1     32      INT       "HG 1"  
+  APPEND_ITEM    PG_1     32      INT       "PG 1"    
+  APPEND_ITEM    ROLL     32      INT       "Roll rate"  
   APPEND_ITEM    RAVEN_VEL     32      INT       "Velocity"    
   APPEND_ITEM    RAVEN_AGL     32      INT       "AGL"
     UNITS Feet ft   
@@ -61,3 +55,6 @@ TELEMETRY M RAVEN LITTLE_ENDIAN "Raven Telemetry"
     LIMITS DEFAULT 3 ENABLED -90 -75 0 0
   APPEND_ITEM    RAVEN_SNR     32      INT       "SNR"  
     LIMITS DEFAULT 3 ENABLED 2 4 15 15
+  APPEND_ITEM    TEST_BATT     64      FLOAT     "Raven Battery V"
+    UNITS Voltage V    
+    LIMITS DEFAULT 3 ENABLED 7.0 7.3 8.4 8.4

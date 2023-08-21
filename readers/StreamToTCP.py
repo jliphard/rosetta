@@ -12,6 +12,8 @@ import re
 HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 PORT = 23200        # Port to listen on (non-privileged ports are > 1023)
 GPS_ID = 'FthrWt04072'
+Serial1 = '/dev/cu.usbserial-D201105P' # for the Featherweight GS
+Serial2 = '/dev/cu.usbserial-2' # for the loRa receiver
 
 def is_garbled(s):
     """ Returns True if string is a number. """
@@ -21,88 +23,112 @@ def is_garbled(s):
     except ValueError:
         return True
 
+# def send_data(binary_data, conn):
+#     try:
+#         conn.sendall(binary_data)
+#     except KeyboardInterrupt:
+#         if conn:
+#             conn.close()
+
+def pack_EGG(data):
+
+    #strip preceeding garbled data, if any
+    location = data.index('E:')
+    data = data[location + 2 : -3] # chop off the \n'
+
+    print("\nParsing Egg:", data)
+
+    # 285:{000>@1>#0000>~AB0000>?085>! 458>=>:-20:73:11\n'
+    # 288:{000>@1>#0000>~AB0000>?085>! 458>=>:-21:74:10\n'
+    # "{000>@1>#0000>~AB0000>?085>! 458>=>"
+    parts = data.split(":")
+    print("parts:", len(parts))
+    if(len(parts) != 5):
+        print("Eggtimer Packet too short or garbled:", data)
+        return 0
+
+    count  = int(parts[0])
+    eggData = parts[1]
+    rssi   = int(parts[2])
+    # 3 = size    
+    snr    = int(parts[4])
+
+    agl = 0
+    if "{" in eggData:
+        i = data.index("{")
+        agl = int(data[i+1:i+4])
+
+    batt = 0.0
+    if "?" in eggData:
+        i = data.index("?")
+        batt = float(data[i+1:i+4])/10.0
+
+    phase = 0
+    if "@" in eggData:
+        i = data.index("@")
+        phase = int(data[i+1])
+
+    pyro = 100;
+    if "~" in eggData:
+        i = data.index("~")
+        state = data[i+1:i+4]
+        if state[0] == "-": pyro += 100;
+        if state[0] == "A": pyro += 200;
+        if state[0] == "1": pyro += 300;
+        if state[1] == "-": pyro += 10;
+        if state[1] == "B": pyro += 20;
+        if state[1] == "2": pyro += 30;
+        if state[2] == "-": pyro += 1;
+        if state[2] == "C": pyro += 2;
+        if state[2] == "2": pyro += 3;
+
+    payload = struct.pack("iidiiiii", 15, count, batt, agl, phase, pyro, rssi, snr)
+    print("Sending Type 15 C:", count, "BATT:", batt, "Alt:", agl, "Phase:", phase, "Pyro:", pyro, "RSSI:", rssi, "SNR:", snr)
+    return payload
+
 def pack_RAV(data):
 
     #strip preceeding garbled data, if any
-    location = data.index('RAV')
-    data = data[location + 3 : ]
+    location = data.index('R:')
+    data = data[location + 2: ] # chop off the \n
 
-    # clean up string in a conservative manner
-    # since there may be errors in it
-    data = data.strip()
-    data = data.replace('#', '')
-    data = data.replace('"', '')
-    data = data.replace('\\n\'', '')
-    data = data.replace(',', '')
-    data = data.replace(':', '')
-    data = data.replace('rssi ', '')
-    data = data.replace('length ', '')
-    data = data.replace('SNR ', '')
+    # there may or may not be garbage at the end of this...
+    # thee chars worth?
+    data = data[0: -3] # chop off the \n
+
     print("\nParsing Raven:", data)
 
-    # remove all runs of spaces
-    remainder = " ".join(data.split())
-
-    # synthetic time since device turned on
-    parts = remainder.split(" ")
+    parts = data.split(":")
     # print("parts:", len(parts))
-    if(len(parts) != 21):
-        #string is garbled
+    if(len(parts) != 11):
+        print("Raven Packet too short or garbled:", data)
         return 0
-
-    parts.pop(17)
 
     if any(is_garbled(p) for p in parts):
         # one or more numbers are corrupted
-        print("Raven Garbled:", remainder)
+        print("Raven Corrupted:", data)
         return 0
 
-    # construct the time
-    hours   = float(parts[0][0:2])
-    minutes = float(parts[0][2:4])
-    seconds = float(parts[0][4:10])
+    # New Raven Data: R:2864:-13:-75:7698:3:0:0
 
-    time_s = hours * 60 * 60 + minutes * 60 + seconds
-    # print(time_s)
+    count  = int(parts[0])
+    time_s = float(parts[1])/10.0
+    hg_1   = int(parts[2])
+    pg_1   = int(parts[3])
+    batt   = float(parts[4])/1000.0
+    gy_1   = int(parts[5])
+    vel    = int(parts[6])
+    agl    = int(parts[7])
 
-    hg_1 = int(parts[1])
-    hg_2 = int(parts[2])
-    hg_3 = int(parts[3])
+    rssi   = int(parts[8])
+    # size    
+    snr    = int(parts[10])
 
-    pg_1 = int(parts[4])
-    pg_2 = int(parts[5])
-    pg_3 = int(parts[6])
-
-    un_1 = int(parts[7])
-    un_2 = int(parts[8])
-    batt = float(parts[9])/1000.0
-
-    gy_1 = int(parts[10])
-    gy_2 = int(parts[11])
-    gy_3 = int(parts[12])
-
-    ang_1 = int(parts[13])
-    ang_2 = int(parts[14])
-    vel   = int(parts[15])
-    agl   = int(parts[16])
-
-    #crc = parts[17][0:3]
-    #counter = int(parts[17][4:])
-
-    rssi =int(parts[17])
-
-    #length = int(parts[18])
+    payload = struct.pack("iiddiiiiiii", 14, count, time_s, batt, hg_1, pg_1, gy_1, vel, agl, rssi, snr)
     
-    snr =int(parts[19])
-
-    payload = struct.pack("idiiiiiiiidiiiiii", 14, time_s, hg_1, hg_2, hg_3, pg_1, pg_2, pg_3, un_1, un_2, batt, ang_1, ang_2, vel, agl, rssi, snr)
+    print("Sending Type 14 C:", count, "T:", time_s, "HG_1:", hg_1, "PG_1:", pg_1, "Batt:", batt, "gy_1:", gy_1)
+    print("Sending Type 14 V:", vel, "AGL:", agl, "RSSI:", rssi, "SNR:", snr)
     
-    print("Sending Type 14 T:", time_s, "HG_1:", hg_1, "HG_2:", hg_2, "HG_3:", hg_3, "PG_1:", pg_1, "PG_2:", pg_2, "PG_3:", pg_3)
-    print("Sending Type 14 UN_1:", un_1, "UN_2:", un_2, "Batt:", batt, "gy_1:", gy_1, "gy_2:", gy_2, "gy_3:", gy_3)
-    print("Sending Type 14 ANG_1:", ang_1, "ANG_2:", ang_2, "vel:", vel, "agl:", agl, "RSSI:", rssi, "SNR:", snr)
-    
-    #print(payload)
-
     return payload
 
 # @ RX_NOMTK 202 0000 00 00 03:00:59.920 CRC_OK  Rx NomTrk FthrWt04072 
@@ -240,20 +266,20 @@ ports = list(port_list.comports())
 for p in ports:
     print (p)
 
-ser1 = serial.Serial('/dev/cu.usbserial-D201105P', baudrate=115200)
+ser1 = serial.Serial(Serial1, baudrate=115200)
 print (ser1.name)
 
-ser2 = serial.Serial('/dev/cu.usbserial-0001', baudrate=115200)
+ser2 = serial.Serial(Serial2, baudrate=115200)
 print (ser2.name)
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((HOST, PORT))
     s.listen()
     conn, addr = s.accept()
-    with conn:
-        
+
+    with conn:        
         print(f"Connected by {addr}")
-        
         while True:
         
             # read all the serial data
@@ -288,8 +314,38 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     conn.sendall(binary_payload)
 
             data = str(data2)
+            print(f"Data2: {data}")
+            # there are three scenarios
+            # Eggtimer only 
+            # Raven only
+            # Dual packet with data from both computers
+            if data[6] == 'E':
+                binary_payload = pack_EGG(data)
+                if binary_payload != 0:
+                    try:
+                        conn.sendall(binary_payload)
+                    except:
+                        print(f"Lost connection to {addr}")
+                        conn, addr = s.accept()
 
-            if 'RAV' in data:
+            if data[6] == 'R':
+                if "E:" in data:
+                    parts = data.split("E:")
+                    data = parts[0]
+                    dataEgg = parts[1]
+                    print(f"Egg data: {dataEgg}")
+                    binary_payload = pack_EGG("E:"+dataEgg)
+                    if binary_payload != 0:
+                        try:
+                            conn.sendall(binary_payload)
+                        except:
+                            print(f"Lost connection to {addr}")
+                            conn, addr = s.accept()
+
                 binary_payload = pack_RAV(data)
                 if binary_payload != 0:
-                    conn.sendall(binary_payload)
+                    try:
+                        conn.sendall(binary_payload)
+                    except:
+                        print(f"Lost connection to {addr}")
+                        conn, addr = s.accept()
