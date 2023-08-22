@@ -6,55 +6,80 @@ TELEMETRY M GPS LITTLE_ENDIAN "GPS Telemetry Featherweight"
     UNITS Seconds s
   APPEND_ITEM    GPS_ALT_1  64      INT       "Altitude (ft)"    
     UNITS Feet ft
-    # LIMITS <LIMITS SET> <PERSISTENCE> <ENABLED/DISABLED> <RED LOW LIMIT> <YELLOW LOW LIMIT> <YELLOW HIGH LIMIT> <RED HIGH LIMIT> <GREEN LOW LIMIT (Optional)> <GREEN HIGH LIMIT (Optional)>
     LIMITS DEFAULT 3 ENABLED -200.0 -30.0 200.0 300.0
   APPEND_ITEM    LAT_1      64      FLOAT     "Latitude"
   APPEND_ITEM    LON_1      64      FLOAT     "Longitude"
-  APPEND_ITEM    GPS_HOR_V      32      INT       "Horizontal Velocity"
-  APPEND_ITEM    GPS_HOR_H      32      INT       "Horizontal Heading"
-  APPEND_ITEM    GPS_VER_V      32      INT       "Vertical Velocity"
-  APPEND_ITEM    SAT_F      32      UINT       "Type of fix (none, 2D, 3D)"
+  APPEND_ITEM    GPS_HOR_V  32      INT       "Horizontal Velocity"
+  APPEND_ITEM    GPS_HOR_H  32      INT       "Horizontal Heading"
+  APPEND_ITEM    GPS_VER_V  32      INT       "Vertical Velocity"
+  APPEND_ITEM    SAT_F      32      UINT      "Type of fix (none, 2D, 3D)"
     STATE NOFIX 1 RED
     STATE 2D    2 YELLOW
     STATE 3D    3 GREEN
-  APPEND_ITEM    SAT_T      32      UINT       "Total sats in view"
+  APPEND_ITEM    SAT_T      32      UINT      "Total sats in view"
       LIMITS DEFAULT 3 ENABLED 5 9 30 30
-  APPEND_ITEM    SAT_24     32      UINT       "Sats > 24 dB"
-  APPEND_ITEM    SAT_32     32      UINT       "Sats > 32 dB"
-  APPEND_ITEM    SAT_40     32      UINT       "Sats > 40 dB"
+  APPEND_ITEM    SAT_24     32      UINT      "Sats > 24 dB"
+  APPEND_ITEM    SAT_32     32      UINT      "Sats > 32 dB"
+  APPEND_ITEM    SAT_40     32      UINT      "Sats > 40 dB"
 
 TELEMETRY M GPSH LITTLE_ENDIAN "GPS Health Telemetry Featherweight"
   # Keyword      Name       BitSize Type   ID Description
   APPEND_ID_ITEM ID         64      UINT   13 "Featherweight GPS Health Telemetry Preamble"
   APPEND_ITEM    TIME       64      FLOAT     "Mission Time (s)" 
     UNITS Seconds s
-  APPEND_ITEM    GS_RSSI      32      INT    "RSSI GS"    
+  APPEND_ITEM    GS_RSSI    32      INT       "RSSI GS"    
     LIMITS DEFAULT 3 ENABLED -90 -75 0 0
-  APPEND_ITEM    TRK_RSSI      32      INT   "RSSI Tracker"    
+  APPEND_ITEM    TRK_RSSI   32      INT       "RSSI Tracker"    
     LIMITS DEFAULT 3 ENABLED -90 -75 0 0
-  APPEND_ITEM    TRK_BATT      64      FLOAT       "GPS Battery V"
+  APPEND_ITEM    TRK_BATT   64      FLOAT     "GPS Battery V"
     UNITS Voltage V    
     LIMITS DEFAULT 3 ENABLED 3.3 3.6 4.2 4.3
 
 TELEMETRY M RAVEN LITTLE_ENDIAN "Raven Telemetry"
-  # Keyword      Name     BitSize Type   ID Description
-  APPEND_ID_ITEM ID       64      UINT   14 "Raven Telemetry Preamble"
-  APPEND_ITEM    COUNTER  32      INT       "Packet Counter"  
-  APPEND_ITEM    TIME     64      FLOAT     "Mission Time (s)" 
+  # Keyword      Name          BitSize Type   ID Description
+  APPEND_ID_ITEM ID            64      UINT   14 "Raven Telemetry Preamble"
+  APPEND_ITEM    COUNTER       32      INT       "Packet Counter"  
+  APPEND_ITEM    TIME          64      FLOAT     "Mission Time (s)" 
     UNITS Seconds s
-  APPEND_ITEM    R_BATT   64      FLOAT     "Raven Battery V"
+  APPEND_ITEM    R_BATT        64      FLOAT     "Raven Battery"
     UNITS Voltage V    
     LIMITS DEFAULT 3 ENABLED 7.0 7.3 8.4 8.4
-  APPEND_ITEM    HG_1     32      INT       "HG 1"  
-  APPEND_ITEM    PG_1     32      INT       "PG 1"    
-  APPEND_ITEM    ROLL     32      INT       "Roll rate"  
-  APPEND_ITEM    RAVEN_VEL     32      INT       "Velocity"    
-  APPEND_ITEM    RAVEN_AGL     32      INT       "AGL"
+  APPEND_ITEM    HG_1          32      INT       "HG 1"  
+  APPEND_ITEM    PG_1          32      INT       "PG 1"    
+  APPEND_ITEM    ROLL          32      INT       "Roll rate"  
+  APPEND_ITEM    R_VEL         32      INT       "Raven Velocity"    
+  APPEND_ITEM    R_AGL         32      INT       "Raven AGL"
     UNITS Feet ft   
-  APPEND_ITEM    RAVEN_RSSI    32      INT       "RSSI" 
+  APPEND_ITEM    R_RSSI        32      INT       "Raven RSSI" 
     LIMITS DEFAULT 3 ENABLED -90 -75 0 0
-  APPEND_ITEM    RAVEN_SNR     32      INT       "SNR"  
+  APPEND_ITEM    R_SNR         32      INT       "Raven SNR"  
     LIMITS DEFAULT 3 ENABLED 2 4 15 15
-  APPEND_ITEM    TEST_BATT     64      FLOAT     "Raven Battery V"
+
+TELEMETRY M EGG LITTLE_ENDIAN "Quantum Telemetry"
+  # Keyword      Name          BitSize Type   ID Description
+  APPEND_ID_ITEM ID            64      UINT   15 "Quantum Telemetry Preamble"
+  APPEND_ITEM    COUNTER       32      INT       "Packet Counter"  
+  APPEND_ITEM    E_BATT        64      FLOAT     "Quantum Battery"
     UNITS Voltage V    
-    LIMITS DEFAULT 3 ENABLED 7.0 7.3 8.4 8.4
+    LIMITS DEFAULT 3 ENABLED 7.0 7.3 9.2 9.2
+  APPEND_ITEM    E_AGL         32      INT       "Quantum AGL"
+    UNITS Feet ft 
+  APPEND_ITEM    PHASE         32      INT       "Flight Phase"
+    STATE Waiting_for_Launch 1
+    STATE Launched           2
+    STATE Low_Velocity       4
+    STATE Nose_Over          5
+    STATE Failsafe           8
+    STATE Touchdown          9
+  APPEND_ITEM    PYRO          32      INT       "Pyro State"
+    STATE -- 210 RED   # No continuity
+    STATE A- 310 RED   # Apo armed
+    STATE -B 220 RED   # Main armed
+    STATE AB 320 GREEN # Both armed
+    STATE 1B 420 GREEN # Apo just fired
+    STATE A2 330 GREEN # Main just fired
+    STATE 12 430 GREEN # Both fired      
+  APPEND_ITEM    E_RSSI        32      INT       "Quantum RSSI" 
+    LIMITS DEFAULT 3 ENABLED -90 -75 0 0
+  APPEND_ITEM    E_SNR         32      INT       "Quantum SNR"  
+    LIMITS DEFAULT 3 ENABLED 2 4 15 15
