@@ -1,7 +1,7 @@
 # describes the device/packet data in the frontend Packet Viewer
 TELEMETRY M GPS LITTLE_ENDIAN "GPS Telemetry Featherweight"
   # Keyword      Name       BitSize Type   ID Description
-  APPEND_ID_ITEM ID         64      UINT   12 "Featherweight GPS Telemetry Preamble"
+  APPEND_ID_ITEM ID         64      INT    11 "Featherweight GPS Telemetry Preamble"
   APPEND_ITEM    TIME       64      FLOAT     "Mission Time (s)" 
     UNITS Seconds s
   APPEND_ITEM    GPS_ALT_1  64      INT       "Altitude (ft)"    
@@ -21,47 +21,52 @@ TELEMETRY M GPS LITTLE_ENDIAN "GPS Telemetry Featherweight"
   APPEND_ITEM    SAT_24     32      UINT      "Sats > 24 dB"
   APPEND_ITEM    SAT_32     32      UINT      "Sats > 32 dB"
   APPEND_ITEM    SAT_40     32      UINT      "Sats > 40 dB"
+  APPEND_ITEM    END         8      INT      "Terminator"  
 
 TELEMETRY M GPSH LITTLE_ENDIAN "GPS Health Telemetry Featherweight"
   # Keyword      Name       BitSize Type   ID Description
-  APPEND_ID_ITEM ID         64      UINT   13 "Featherweight GPS Health Telemetry Preamble"
+  APPEND_ID_ITEM ID         64      INT   13 "Featherweight GPS Health Telemetry Preamble"
   APPEND_ITEM    TIME       64      FLOAT     "Mission Time (s)" 
     UNITS Seconds s
   APPEND_ITEM    GS_RSSI    32      INT       "RSSI GS"    
     LIMITS DEFAULT 3 ENABLED -90 -75 0 0
   APPEND_ITEM    TRK_RSSI   32      INT       "RSSI Tracker"    
     LIMITS DEFAULT 3 ENABLED -90 -75 0 0
+  APPEND_ITEM    GS_SNR    32      INT        "SNR GS"    
+    LIMITS DEFAULT 3 ENABLED 0 2 10 10
+  APPEND_ITEM    TRK_SNR   32      INT        "SNR Tracker"    
+    LIMITS DEFAULT 3 ENABLED 0 2 10 10
   APPEND_ITEM    TRK_BATT   64      FLOAT     "GPS Battery V"
     UNITS Voltage V    
     LIMITS DEFAULT 3 ENABLED 3.3 3.6 4.2 4.3
+  APPEND_ITEM    END         8      INT       "Terminator"  
 
 TELEMETRY M RAVEN LITTLE_ENDIAN "Raven Telemetry"
-  # Keyword      Name          BitSize Type   ID Description
-  APPEND_ID_ITEM ID            64      UINT   14 "Raven Telemetry Preamble"
-  APPEND_ITEM    COUNTER       32      INT       "Packet Counter"  
-  APPEND_ITEM    TIME          64      FLOAT     "Mission Time (s)" 
-    UNITS Seconds s
-  APPEND_ITEM    R_BATT        64      FLOAT     "Raven Battery"
-    UNITS Voltage V    
-    LIMITS DEFAULT 3 ENABLED 7.0 7.3 8.4 8.4
-  APPEND_ITEM    HG_1          32      INT       "HG 1"  
-  APPEND_ITEM    PG_1          32      INT       "PG 1"    
-  APPEND_ITEM    ROLL          32      INT       "Roll rate"  
-  APPEND_ITEM    R_VEL         32      INT       "Raven Velocity"    
-  APPEND_ITEM    R_AGL         32      INT       "Raven AGL"
+  # Keyword      Name          BitSize Type  ID  Description
+  APPEND_ID_ITEM ID            64      INT    1  "Raven Telemetry Preamble"
+  APPEND_ITEM    COUNTER       64      INT      "Packet Counter"  
+  APPEND_ITEM    HG_1          32      INT      "HG 1"  
+  APPEND_ITEM    PG_1          32      INT      "PG 1"    
+  APPEND_ITEM    ROLL          32      INT      "Roll rate"  
+  APPEND_ITEM    R_VEL         32      INT      "Raven Velocity"    
+  APPEND_ITEM    R_AGL         32      INT      "Raven AGL"
     UNITS Feet ft   
   APPEND_ITEM    R_RSSI        32      INT       "Raven RSSI" 
     LIMITS DEFAULT 3 ENABLED -90 -75 0 0
   APPEND_ITEM    R_SNR         32      INT       "Raven SNR"  
     LIMITS DEFAULT 3 ENABLED 2 4 15 15
+  APPEND_ITEM    PACK          32      INT       "Pack Bytes"  
+  APPEND_ITEM    TIME          64      FLOAT     "Mission Time (s)" 
+    UNITS Seconds s
+  APPEND_ITEM    R_BATT        64      FLOAT     "Raven Battery"
+    UNITS Voltage V    
+    LIMITS DEFAULT 3 ENABLED 7.0 7.3 8.4 8.4
+  APPEND_ITEM    END           8       INT      "Terminator"  
 
 TELEMETRY M EGG LITTLE_ENDIAN "Quantum Telemetry"
-  # Keyword      Name          BitSize Type   ID Description
-  APPEND_ID_ITEM ID            64      UINT   15 "Quantum Telemetry Preamble"
-  APPEND_ITEM    COUNTER       32      INT       "Packet Counter"  
-  APPEND_ITEM    E_BATT        64      FLOAT     "Quantum Battery"
-    UNITS Voltage V    
-    LIMITS DEFAULT 3 ENABLED 7.0 7.3 9.2 9.2
+  # Keyword      Name          BitSize Type  ID  Description
+  APPEND_ID_ITEM ID            64      INT    2  "Quantum Telemetry Preamble"
+  APPEND_ITEM    COUNTER       64      INT       "Packet Counter"  
   APPEND_ITEM    E_AGL         32      INT       "Quantum AGL"
     UNITS Feet ft 
   APPEND_ITEM    PHASE         32      INT       "Flight Phase"
@@ -72,14 +77,21 @@ TELEMETRY M EGG LITTLE_ENDIAN "Quantum Telemetry"
     STATE Failsafe           8
     STATE Touchdown          9
   APPEND_ITEM    PYRO          32      INT       "Pyro State"
-    STATE -- 210 RED   # No continuity
-    STATE A- 310 RED   # Apo armed
-    STATE -B 220 RED   # Main armed
-    STATE AB 320 GREEN # Both armed
-    STATE 1B 420 GREEN # Apo just fired
-    STATE A2 330 GREEN # Main just fired
-    STATE 12 430 GREEN # Both fired      
+    STATE 00 111 RED   # No continuity
+    STATE A0 211 RED   # Apo armed
+    STATE 0B 121 RED   # Main armed
+    STATE AB 221 GREEN # Both armed
+    STATE 1B 321 GREEN # Apo just fired
+    STATE A2 231 GREEN # Main just fired
+    STATE 12 331 GREEN # Both fired      
   APPEND_ITEM    E_RSSI        32      INT       "Quantum RSSI" 
     LIMITS DEFAULT 3 ENABLED -90 -75 0 0
   APPEND_ITEM    E_SNR         32      INT       "Quantum SNR"  
     LIMITS DEFAULT 3 ENABLED 2 4 15 15
+  APPEND_ITEM    E_BATT        32      INT       "Quantum Battery"
+    GENERIC_READ_CONVERSION_START
+      (value / 10.0) - 0.8  # Convert the value by a scale factor
+    GENERIC_READ_CONVERSION_END
+    UNITS Voltage V
+    LIMITS DEFAULT 3 ENABLED 7.0 7.3 8.4 8.4
+  APPEND_ITEM    END           8       INT      "Terminator"  

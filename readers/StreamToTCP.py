@@ -77,13 +77,15 @@ def pack_FW_TRK(data):
     time_s = hours * 60 * 60 + minutes * 60 + seconds
 
     rssi_1 = int(parts[3])
+    snr_1 = int(parts[4])
     rssi_2 = int(parts[7])
+    snr_2 = int(parts[8])
 
     bat = float(parts[11])/1000.0
 
-    payload = struct.pack("idiid", 13, time_s, rssi_1, rssi_2, bat)
+    payload = struct.pack("idiiiidc", 13, time_s, rssi_1, rssi_2, snr_1, snr_2, bat, b'\n')
     
-    print("Sending Type 13 T:", time_s, "RSSI_1:", rssi_1, "RSSI_2:", rssi_2, "BATT:", bat)
+    print("Sending Type 13 T:", time_s, "RSSI_1:", rssi_1, "RSSI_2:", rssi_2, "SNR_1:", snr_1, "SNR_2:", snr_2, "BATT:", bat)
 
     return payload
 
@@ -146,10 +148,13 @@ def pack_FW_GPS(data):
     sat32       = int(  parts[10])
     sat40       = int(  parts[11])
 
-    payload = struct.pack("ididdiiiiiiii", 12, time_s, altitude_ft, lat, lon, \
-        hv, hdir, vv, fix, satTotal, sat24, sat32, sat40)
+    payload = struct.pack("qdiddiiiiiiiic", 11, time_s, altitude_ft, lat, lon, \
+        hv, hdir, vv, fix, satTotal, sat24, sat32, sat40, b'\n')
     
-    print("Sending Type 12 T:", time_s, "lat:", lat, "lon:", lon, "alt:", altitude_ft, "hv:", hv, "hdir:", hdir, "vv:", vv, "fix:", fix, "satTotal:", satTotal)
+    # print(payload)
+
+    print("Sending Type 11 T:", time_s, "lat:", lat, "lon:", lon, "alt:",\
+     altitude_ft, "hv:", hv, "hdir:", hdir, "vv:", vv, "fix:", fix, "satTotal:", satTotal)
 
     return payload
 
@@ -182,32 +187,35 @@ def pack_EGG(data):
         i = data.index("{")
         agl = int(data[i+1:i+4])
 
-    batt = 0.0
+    batt = 0
     if "?" in eggData:
         i = data.index("?")
-        batt = float(data[i+1:i+4])/10.0
+        batt = int(data[i+1:i+4])
 
     phase = 0
     if "@" in eggData:
         i = data.index("@")
         phase = int(data[i+1])
 
-    pyro = 100;
+    pyro = 0;
     if "~" in eggData:
         i = data.index("~")
         state = data[i+1:i+4]
-        if state[0] == "-": pyro += 100;
+        if state[0] == "0": pyro += 100;
         if state[0] == "A": pyro += 200;
         if state[0] == "1": pyro += 300;
-        if state[1] == "-": pyro += 10;
-        if state[1] == "B": pyro += 20;
-        if state[1] == "2": pyro += 30;
-        if state[2] == "-": pyro += 1;
-        if state[2] == "C": pyro += 2;
-        if state[2] == "2": pyro += 3;
+        if state[1] == "0": pyro +=  10;
+        if state[1] == "B": pyro +=  20;
+        if state[1] == "2": pyro +=  30;
+        if state[2] == "0": pyro +=   1;
+        if state[2] == "C": pyro +=   2;
+        if state[2] == "3": pyro +=   3;
 
-    payload = struct.pack("iidiiiii", 15, count, batt, agl, phase, pyro, rssi, snr)
-    print("Sending Type 15 C:", count, "BATT:", batt, "Alt:", agl, "Phase:", phase, "Pyro:", pyro, "RSSI:", rssi, "SNR:", snr)
+    payload = struct.pack("qqiiiiiic", 2, count, agl, phase, pyro, rssi, snr, batt, b'\n')
+
+    #print(payload)
+    print("Sending Type 2 C:", count, "Batt:", batt, "Alt:", agl, "Phase:", phase, "Pyro:", pyro, "RSSI:", rssi, "SNR:", snr)
+    
     return payload
 
 def pack_RAV(data):
@@ -245,9 +253,11 @@ def pack_RAV(data):
     # size    
     snr    = int(parts[10])
 
-    payload = struct.pack("iiddiiiiiii", 14, count, time_s, batt, hg_1, pg_1, gy_1, vel, agl, rssi, snr)
-    
-    print("Sending Type 14 C:", count, "T:", time_s, "HG_1:", hg_1, "PG_1:", pg_1, "Batt:", batt, "gy_1:", gy_1, "V:", vel, "AGL:", agl, "RSSI:", rssi, "SNR:", snr)
+    payload = struct.pack("qqiiiiiiiiddc", 1, count, hg_1, pg_1, gy_1, vel, agl, rssi, snr, 0, time_s, batt, b'\n')
+
+    print("Sending Type 1 C:", count, "HG_1:", hg_1, "PG_1:", pg_1,\
+        "gy_1:", gy_1, "V:", vel, "AGL:", agl, "RSSI:", rssi, "SNR:",\
+        snr, "T:", time_s, "Batt:", batt)
     
     return payload
 
@@ -328,8 +338,8 @@ if __name__ == "__main__":
                 logFileRaw.write(data2)
                 logFileRaw.write("\n")
 
-                data2 = data2.replace('\\n\'', '')  # chop off the \n', if its there
-                data2 = data2.replace('\\r', '')    # chop off the \r', if its there
+                data2 = data2.replace('\\n\'', '')  # chop off the \n', if it's there
+                data2 = data2.replace('\\r', '')    # chop off the \r', if it's there
 
                 if len(data2) < 7:
                     continue
@@ -355,102 +365,7 @@ if __name__ == "__main__":
                     # print(f"Rav data: {dataRav}")
                     # print(f"Egg data: {dataEgg}")
                     send_data(pack_RAV(dataRav), conn)
+                    time.sleep(0.05)
                     send_data(pack_EGG(dataEgg), conn)
                 elif (data2[6] == 'R'):
                     send_data(pack_RAV(data2), conn)
-
-
-
-
-
-
-# with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-#     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # prevents "address already in use""
-#     s.bind((HOST, PORT))
-#     s.listen()
-
-#     # waits for connection
-#     conn, addr = s.accept()
-
-#     # with conn:        
-        
-#     #     print(f"Connected by {addr}")
-        
-#     while True:
-    
-#         if ser1.isOpen():
-#             data1 = str(ser1.readline())
-#             if '@ GPS_STAT' in data1:
-#                 if GPS_ID not in data1:
-#                     continue
-#                 if 'TRK' in data1:
-#                     # ok, it's a tracking packet
-#                     binary_payload = pack_FW_GPS(data1)
-#                     if binary_payload != 0:
-#                         try:
-#                             conn.sendall(binary_payload)
-#                         except:
-#                             print(f"Lost connection to {addr}")
-#                             #conn, addr = s.accept()
-
-#             if '@ RX_NOMTK' in data1:
-#                 if GPS_ID not in data1:
-#                     continue
-#                 binary_payload = pack_FW_TRK(data1)
-#                 if binary_payload != 0:
-#                     try:
-#                         conn.sendall(binary_payload)
-#                     except:
-#                         print(f"Lost connection to {addr}")
-#                             #conn, addr = s.accept()
-#                         #conn.sendall(binary_payload)
-#     # ser.open()
-#     #         # read all the serial data
-#     #         if ser1:
-                
-#     #         # print (data1)
-            
-#     #         data2 = str(ser2.readline())
-#     #         # print (data2)
-
-
-#     #         data = str(data1)
-
-            
-
-#     #         data = str(data2)
-#     #         print(f"Data2: {data}")
-#     #         # there are three scenarios
-#     #         # Eggtimer only 
-#     #         # Raven only
-#     #         # Dual packet with data from both computers
-#     #         if data[6] == 'E':
-#     #             binary_payload = pack_EGG(data)
-#     #             if binary_payload != 0:
-#     #                 try:
-#     #                     conn.sendall(binary_payload)
-#     #                 except:
-#     #                     print(f"Lost connection to {addr}")
-#     #                     conn, addr = s.accept()
-
-#     #         if data[6] == 'R':
-#     #             if "E:" in data:
-#     #                 parts = data.split("E:")
-#     #                 data = parts[0]
-#     #                 dataEgg = parts[1]
-#     #                 print(f"Egg data: {dataEgg}")
-#     #                 binary_payload = pack_EGG("E:"+dataEgg)
-#     #                 if binary_payload != 0:
-#     #                     try:
-#     #                         conn.sendall(binary_payload)
-#     #                     except:
-#     #                         print(f"Lost connection to {addr}")
-#     #                         conn, addr = s.accept()
-
-#     #             binary_payload = pack_RAV(data)
-#     #             if binary_payload != 0:
-#     #                 try:
-#     #                     conn.sendall(binary_payload)
-#     #                 except:
-#     #                     print(f"Lost connection to {addr}")
-#     #                     conn, addr = s.accept()
