@@ -33,12 +33,12 @@ TELEMETRY M GPSH LITTLE_ENDIAN "GPS Health Telemetry Featherweight"
   APPEND_ITEM    TRK_RSSI   32      INT       "RSSI Tracker"    
     LIMITS DEFAULT 3 ENABLED -90 -75 0 0
   APPEND_ITEM    GS_SNR    32      INT        "SNR GS"    
-    LIMITS DEFAULT 3 ENABLED 0 2 10 10
+    LIMITS DEFAULT 3 ENABLED 2 4 15 15
   APPEND_ITEM    TRK_SNR   32      INT        "SNR Tracker"    
-    LIMITS DEFAULT 3 ENABLED 0 2 10 10
+    LIMITS DEFAULT 3 ENABLED 2 4 15 15
   APPEND_ITEM    TRK_BATT   64      FLOAT     "GPS Battery V"
     UNITS Voltage V    
-    LIMITS DEFAULT 3 ENABLED 3.3 3.6 4.2 4.3
+    LIMITS DEFAULT 3 ENABLED 3.6 3.8 4.2 4.3
   APPEND_ITEM    END         8      INT       "Terminator"  
 
 TELEMETRY M RAVEN LITTLE_ENDIAN "Raven Telemetry"
@@ -60,7 +60,7 @@ TELEMETRY M RAVEN LITTLE_ENDIAN "Raven Telemetry"
     UNITS Seconds s
   APPEND_ITEM    R_BATT        64      FLOAT     "Raven Battery"
     UNITS Voltage V    
-    LIMITS DEFAULT 3 ENABLED 7.0 7.3 8.4 8.4
+    LIMITS DEFAULT 3 ENABLED 7.2 7.4 8.5 8.5
   APPEND_ITEM    END           8       INT      "Terminator"  
 
 TELEMETRY M EGG LITTLE_ENDIAN "Quantum Telemetry"
@@ -90,8 +90,8 @@ TELEMETRY M EGG LITTLE_ENDIAN "Quantum Telemetry"
     LIMITS DEFAULT 3 ENABLED 2 4 15 15
   APPEND_ITEM    E_BATT        32      INT       "Quantum Battery"
     GENERIC_READ_CONVERSION_START
-      (value / 10.0) - 0.8  # Convert the value by a scale factor
+      (value / 10.0) - 1.0  # Convert the value by a scale factor
     GENERIC_READ_CONVERSION_END
     UNITS Voltage V
-    LIMITS DEFAULT 3 ENABLED 7.0 7.3 8.4 8.4
+    LIMITS DEFAULT 3 ENABLED 7.2 7.4 8.5 8.5
   APPEND_ITEM    END           8       INT      "Terminator"  
