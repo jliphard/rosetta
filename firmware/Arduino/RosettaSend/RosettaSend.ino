@@ -1,15 +1,9 @@
-/*
-
-Firmware for Arduino MKRWAN 1310
-
-Connects to Featherweight Raven in USB Host mode and Eggtimer Quantum as serial UART
-
-Copyright 2023 Jan T. Liphardt
-
-JTLiphardt@gmail.com
-
-No warranties, use at your own risk.
-
+/* 
+  Firmware for Arduino MKRWAN 1310
+  Connects to Featherweight Raven in USB Host mode and Eggtimer Quantum as serial UART
+  Copyright 2023 Jan T. Liphardt
+  JTLiphardt@gmail.com
+  No warranties, use at your own risk.
 */
 
 #include <SPI.h>
@@ -19,6 +13,10 @@ No warranties, use at your own risk.
 #include <usbhub.h>
 
 #include "wiring_private.h"
+
+#include <Arduino_MKRGPS.h>
+
+#include <avr/dtostrf.h> 
 
 #define SerialDebug Serial1
 
@@ -125,7 +123,7 @@ void setup() {
   //  53 bytes SF9 125 kHz
   // 125 bytes SF8 125 kHz
 
-  //https://lora-developers.semtech.com/documentation/tech-papers-and-guides/lora-and-lorawan/#:~:text=LoRa%20modulation%20has%20a%20total,errors%20by%20the%20RF%20receiver.
+  // https://lora-developers.semtech.com/documentation/tech-papers-and-guides/lora-and-lorawan/#:~:text=LoRa%20modulation%20has%20a%20total,errors%20by%20the%20RF%20receiver.
   // For a fixed SF, a narrower bandwidth will increase sensitivity as the bit rate is reduced.
   LoRa.setSignalBandwidth(125E3);
   // 7.8E3, 10.4E3, 15.6E3, 20.8E3, 31.25E3, 41.7E3, 62.5E3, 125E3, 250E3, and 500E3.
@@ -140,6 +138,12 @@ void setup() {
   // 3           |  4/7     |   1.75
   // 4           |  4/8     |   2
   LoRa.setCodingRate4(8);
+
+  if (!GPS.begin()) {
+    SerialDebug.println("Failed to initialize GPS!");
+  } else {
+    SerialDebug.println("GPS is up!");
+  }
 }
 
 void loop() {
@@ -165,11 +169,42 @@ void loop() {
   if(Serial2.available() > 0) {
     EggData = Serial2.readString();
     if(EggData.length() > 0) {
-      EggData = "E:" + String(counterEgg) + ":" + EggData;
+      EggData = "E" + EggData;
       counterEgg++;
       haveNewEggData = true;
     }
   }
+  
+  if (GPS.available()) {
+    SerialDebug.println("GPS has data");
+  } else {
+    SerialDebug.println("Waiting for GPS");
+  }
+
+  float latitude   = GPS.latitude();         // We are always on the Northern hemisphere
+  float longitude  = GPS.longitude() * -1.0; // We are always near -122 W
+
+  SerialDebug.print("Location: ");
+  SerialDebug.print(latitude);
+  SerialDebug.print(" ");
+  SerialDebug.println(longitude);
+
+  // downsample alt to nearest 10 meters
+  long altitude = long(GPS.altitude() / 10.0);
+
+  // remove the degrees and sign and convert to a long
+  // downsample to 5 decimal places aka 1.1 m accuracy 
+  long latLocal = (latitude  - long(latitude) ) * 100000L;
+  long lonLocal = (longitude - long(longitude)) * 100000L;
+
+  char gps[15];
+  sprintf(gps, "G%d:%d:%d\0", latLocal, lonLocal, altitude);
+  SerialDebug.print("Backup GPS: ");
+  SerialDebug.println(gps);
+
+  int satellites = GPS.satellites();
+  SerialDebug.print("Number of satellites: ");
+  SerialDebug.println(satellites);
 
   UsbH.Task();
 
@@ -327,8 +362,8 @@ void loop() {
 
         while (token != NULL) {
           tN++;
-          //SerialDebug.print(tN);
-          //SerialDebug.println(token);
+          SerialDebug.print(tN);
+          SerialDebug.println(token);
           token = strtok(NULL, delimiter);
           if (tN == 1) 
             seconds = atof(token);
@@ -336,22 +371,24 @@ void loop() {
             accel400 = atoi(token);
           else if (tN == 5) 
             accel16 = atoi(token);
-          else if (tN == 10) 
-            batt = atoi(token);
+          else if (tN == 10)
+            // downsample the battery to one decimal point 
+            batt = int(float(atoi(token))/100.0);
           else if (tN == 11) 
             roll = atoi(token);
           else if (tN == 16) 
             vel = atoi(token);
           else if (tN == 17) 
-            agl = atoi(token);
+            // downsample the alt to nearest 10th
+            agl = int(float(atoi(token))/10.0);
         }
 
-        int time = (minutes * 60 + seconds) * 10.0; // convert time to seconds * 10 to preserve 10th ms
+        int time = (minutes * 60 + seconds) * 10.0; 
+        // convert time to seconds * 10 to preserve 10th ms
 
         // construct the final data string
-
-        char buffer[100];
-        sprintf(buffer, "R:%d:%d:%d:%d:%d:%d:%d:%d\0", counterRav, time, accel400, accel16, batt, roll, vel, agl);
+        char buffer[22];
+        sprintf(buffer, "R%d:%d:%d:%d:%d:%d:%d\0", time, accel400, accel16, batt, roll, vel, agl);
         RavData = String(buffer);
         counterRav++;
         haveNewRavData = true;
@@ -383,6 +420,7 @@ void loop() {
         LoRa.print(RavData);
       if (haveNewEggData)
         LoRa.print(EggData);
+      LoRa.print(String(gps));
       LoRa.endPacket(true);
     } else if (LoRaState == 0) {
       SerialDebug.println("LORA DATA LOSS: Radio not ready");

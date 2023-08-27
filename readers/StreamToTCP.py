@@ -14,7 +14,7 @@ HOST    = "127.0.0.1"  # Standard loopback interface address (localhost)
 PORT    = 23200        # Port to listen on (non-privileged ports are > 1023)
 GPS_ID  = 'FthrWt04072'
 Serial1 = '/dev/cu.usbserial-D201105P' # for the Featherweight GS
-Serial2 = '/dev/cu.usbserial-4' # for the loRa receiver
+Serial2 = '/dev/cu.usbserial-1' # for the loRa receiver
 
 def is_garbled(s):
     """ Returns True if string is a number. """
@@ -158,6 +158,39 @@ def pack_FW_GPS(data):
 
     return payload
 
+def pack_AGPS(data):
+
+    #strip preceeding garbled data, if any
+    location = data.index('G')
+    data = data[location + 1 : ]
+    data = data.replace('\\n\'', '') # chop off the \n', if its there
+
+    print("Parsing AGPS:", data)
+
+    parts = data.split(":")
+    # print("parts:", len(parts))
+    if(len(parts) < 3):
+        print("AGPS Packet too short or garbled:", data)
+        return 0
+
+    if any(is_garbled(p) for p in parts):
+        # one or more numbers are corrupted
+        print("AGPS Corrupted:", data)
+        return 0
+
+    lat  = int(parts[0])
+    lon  = int(parts[1])
+    agl  = int(parts[2])
+    rssi = int(parts[3])
+    # 3 = size    
+    snr  = int(parts[5])
+
+    payload = struct.pack("qqiiiiic", 3, 0, lat, lon, agl, rssi, snr, b'\n')
+
+    print("Sending Type 3", "Lat:", lat, "Lon:", lon, "Agl:", agl, "RSSI:", rssi, "SNR:", snr)
+    
+    return payload
+
 def pack_EGG(data):
 
     #strip preceeding garbled data, if any
@@ -221,15 +254,15 @@ def pack_EGG(data):
 def pack_RAV(data):
 
     #strip preceeding garbled data, if any
-    location = data.index('R:')
-    data = data[location + 2: ]
+    location = data.index('R')
+    data = data[location + 1 : ]
     data = data.replace('\\n\'', '') # chop off the \n', if its there
 
     print("Parsing Raven:", data)
 
     parts = data.split(":")
     # print("parts:", len(parts))
-    if(len(parts) < 11):
+    if(len(parts) < 9):
         print("Raven Packet too short or garbled:", data)
         return 0
 
@@ -240,22 +273,22 @@ def pack_RAV(data):
 
     # New Raven Data: R:2864:-13:-75:7698:3:0:0
 
-    count  = int(parts[0])
-    time_s = float(parts[1])/10.0
-    hg_1   = int(parts[2])
-    pg_1   = int(parts[3])
-    batt   = float(parts[4])/1000.0
-    gy_1   = int(parts[5])
-    vel    = int(parts[6])
-    agl    = int(parts[7])
+    # count  = int(parts[0])
+    time_s = float(parts[0])/10.0
+    hg_1   = int(parts[1])
+    pg_1   = int(parts[2])
+    batt   = float(parts[3])/10.0
+    gy_1   = int(parts[4])
+    vel    = int(parts[5])
+    agl    = int(parts[6])
 
-    rssi   = int(parts[8])
+    rssi   = int(parts[7])
     # size    
-    snr    = int(parts[10])
+    snr    = int(parts[9])
 
-    payload = struct.pack("qqiiiiiiiiddc", 1, count, hg_1, pg_1, gy_1, vel, agl, rssi, snr, 0, time_s, batt, b'\n')
+    payload = struct.pack("qqiiiiiiiiddc", 1, 0, hg_1, pg_1, gy_1, vel, agl, rssi, snr, 0, time_s, batt, b'\n')
 
-    print("Sending Type 1 C:", count, "HG_1:", hg_1, "PG_1:", pg_1,\
+    print("Sending Type 1 C:", 0, "HG_1:", hg_1, "PG_1:", pg_1,\
         "gy_1:", gy_1, "V:", vel, "AGL:", agl, "RSSI:", rssi, "SNR:",\
         snr, "T:", time_s, "Batt:", batt)
     
@@ -350,22 +383,37 @@ if __name__ == "__main__":
                 # Eggtimer only 
                 # Raven only
                 # Dual packet with data from both computers
+                
+                # signal strength etc
+                radioData = data2[-10:]
+                print(f"Radio: {radioData}")
 
-                # eggtimer only
-                if data2[6] == 'E': send_data(pack_EGG(data2), conn)
+                # the raven, eggtime, and alt GPS data
+                data2 = data2[0:-10]
+                print(f"R,E,G: {data2}")
+                
+                # split off the alt GPS data
+                parts = data2.split("G")
+                GPS2 = parts[1]
+                print(f"G: {GPS2}")
+                send_data(pack_AGPS('G'+GPS2+radioData), conn)
+                
+                # the raven and or eggtimer to parse
+                data2 = parts[0]
+                print(f"R,E: {data2}")
 
-                # raven only OR dual packet
-                if (data2[6] == 'R') and ("E:" in data2):
-                    data2RXdata = data2[-10:]
-                    # print(f"Tail: {data2RXdata}")
-                    # print(f"BOTH: {data2}")
-                    parts = data2.split("E:")
-                    dataRav = parts[0]+data2RXdata
-                    dataEgg = "E:"+parts[1]
+                # begins with E = eggtimer only
+                if data2[6] == 'E': send_data(pack_EGG(data2+radioData), conn)
+
+                # begins with R (raven) but may be dual packet
+                if (data2[6] == 'R') and ('E' in data2):
+                    parts = data2.split('E')
+                    dataRav = parts[0]+radioData
+                    dataEgg = 'E'+parts[1]
                     # print(f"Rav data: {dataRav}")
                     # print(f"Egg data: {dataEgg}")
                     send_data(pack_RAV(dataRav), conn)
                     time.sleep(0.05)
                     send_data(pack_EGG(dataEgg), conn)
                 elif (data2[6] == 'R'):
-                    send_data(pack_RAV(data2), conn)
+                    send_data(pack_RAV(data2+radioData), conn)
