@@ -8,15 +8,10 @@
 
 #include <SPI.h>
 #include <LoRa.h>
-
 #include <cdcacm.h>
 #include <usbhub.h>
-
 #include "wiring_private.h"
-
 #include <Arduino_MKRGPS.h>
-
-#include <avr/dtostrf.h> 
 
 #define SerialDebug Serial1
 
