@@ -1,50 +1,66 @@
 [
   {
+    "screen": "GPS",
+    "target": "M",
+    "floated": true,
+    "top": 108,
+    "left": 1228,
+    "zIndex": 0
+  },
+  {
     "screen": "RAVEN",
     "target": "M",
     "floated": true,
-    "top": 701,
-    "left": 5,
+    "top": 703,
+    "left": -4,
     "zIndex": 0
   },
   {
     "screen": "ATTITUDE",
     "target": "M",
     "floated": true,
-    "top": 0,
-    "left": 0,
+    "top": -5,
+    "left": -7,
     "zIndex": 0
   },
   {
     "screen": "MAIN",
     "target": "M",
     "floated": true,
-    "top": 117,
-    "left": 1628,
+    "top": 808,
+    "left": 1859,
     "zIndex": 0
   },
   {
     "screen": "NAV",
     "target": "M",
     "floated": true,
-    "top": 116,
-    "left": 2077,
+    "top": 107,
+    "left": 2233,
     "zIndex": 0
   },
   {
     "screen": "PLOT",
     "target": "M",
     "floated": true,
-    "top": 111,
-    "left": 4,
+    "top": 109,
+    "left": -3,
     "zIndex": 0
   },
   {
     "screen": "RADIO",
     "target": "M",
     "floated": true,
-    "top": 115,
-    "left": 1243,
+    "top": 105,
+    "left": 1851,
+    "zIndex": 0
+  },
+  {
+    "screen": "GPS2",
+    "target": "M",
+    "floated": true,
+    "top": 704,
+    "left": 1231,
     "zIndex": 0
   }
 ]

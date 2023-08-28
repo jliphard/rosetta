@@ -95,3 +95,20 @@ TELEMETRY M EGG LITTLE_ENDIAN "Quantum Telemetry"
     UNITS Voltage V
     LIMITS DEFAULT 3 ENABLED 7.2 7.4 8.5 8.5
   APPEND_ITEM    END           8       INT      "Terminator"  
+
+  TELEMETRY M GPS2 LITTLE_ENDIAN "Backup GPS"
+  # Keyword      Name          BitSize Type  ID  Description
+  APPEND_ID_ITEM ID            64      INT    3  "Backup Telemetry Preamble"
+  APPEND_ITEM    COUNTER       64      INT       "Packet Counter"  
+  APPEND_ITEM    LAT           32      INT       "Latitude"
+  APPEND_ITEM    LON           32      INT       "Longitude"
+  APPEND_ITEM    G_AGL         32      INT       "GPS2 AGL"
+    GENERIC_READ_CONVERSION_START
+      (value * 10.0) * 3.28
+    GENERIC_READ_CONVERSION_END
+    UNITS Feet ft 
+  APPEND_ITEM    G_RSSI        32      INT       "GPS2 RSSI" 
+    LIMITS DEFAULT 3 ENABLED -90 -75 0 0
+  APPEND_ITEM    G_SNR         32      INT       "GPS2 SNR"  
+    LIMITS DEFAULT 3 ENABLED 2 4 15 15
+  APPEND_ITEM    END           8       INT      "Terminator"  
