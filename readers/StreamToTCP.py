@@ -85,7 +85,10 @@ def pack_FW_TRK(data):
 
     payload = struct.pack("idiiiidc", 13, time_s, rssi_1, rssi_2, snr_1, snr_2, bat, b'\n')
     
-    print("Sending Type 13 T:", time_s, "RSSI_1:", rssi_1, "RSSI_2:", rssi_2, "SNR_1:", snr_1, "SNR_2:", snr_2, "BATT:", bat)
+    logString = f"Type 13 T:{time_s} RSSI_1:{rssi_1} RSSI_2:{rssi_2} SNR_1:{snr_1} SNR_2:{snr_2} BATT:{bat}"
+    print(logString)
+    logFilePro.write(logString)
+    logFilePro.write("\n")
 
     return payload
 
@@ -151,10 +154,10 @@ def pack_FW_GPS(data):
     payload = struct.pack("qdiddiiiiiiiic", 11, time_s, altitude_ft, lat, lon, \
         hv, hdir, vv, fix, satTotal, sat24, sat32, sat40, b'\n')
     
-    # print(payload)
-
-    print("Sending Type 11 T:", time_s, "lat:", lat, "lon:", lon, "alt:",\
-     altitude_ft, "hv:", hv, "hdir:", hdir, "vv:", vv, "fix:", fix, "satTotal:", satTotal)
+    logString = f"Type 11 T:{time_s} lat:{lat} lon:{lon} alt:{altitude_ft} hv:{hv} hdir:{hdir} vv:{vv} fix:{fix} satTotal:{satTotal}"
+    print(logString)
+    logFilePro.write(logString)
+    logFilePro.write("\n")
 
     return payload
 
@@ -186,9 +189,12 @@ def pack_AGPS(data):
     snr  = int(parts[5])
 
     payload = struct.pack("qqiiiiic", 3, 0, lat, lon, agl, rssi, snr, b'\n')
-
-    print("Sending Type 3", "Lat:", lat, "Lon:", lon, "Agl:", agl, "RSSI:", rssi, "SNR:", snr)
     
+    logString = f"Type 3 Lat:{lat} Lon:{lon} Agl:{agl} RSSI:{rssi} SNR:{snr}"
+    print(logString)
+    logFilePro.write(logString)
+    logFilePro.write("\n")
+
     return payload
 
 def pack_EGG(data):
@@ -246,8 +252,10 @@ def pack_EGG(data):
 
     payload = struct.pack("qqiiiiiic", 2, 0, agl, phase, pyro, rssi, snr, batt, b'\n')
 
-    #print(payload)
-    print("Sending Type 2 Batt:", batt, "Alt:", agl, "Phase:", phase, "Pyro:", pyro, "RSSI:", rssi, "SNR:", snr)
+    logString = f"Type 2 Batt:{batt} Alt:{agl} Phase:{phase} Pyro:{pyro} RSSI:{rssi} SNR:{snr}"
+    print(logString)
+    logFilePro.write(logString)
+    logFilePro.write("\n")
     
     return payload
 
@@ -288,9 +296,10 @@ def pack_RAV(data):
 
     payload = struct.pack("qqiiiiiiiiddc", 1, 0, hg_1, pg_1, gy_1, vel, agl, rssi, snr, 0, time_s, batt, b'\n')
 
-    print("Sending Type 1 HG_1:", hg_1, "PG_1:", pg_1,\
-        "gy_1:", gy_1, "V:", vel, "AGL:", agl, "RSSI:", rssi, "SNR:",\
-        snr, "T:", time_s, "Batt:", batt)
+    logString = f"Type 1 HG_1:{hg_1} PG_1:{pg_1} gy_1:{gy_1} V:{vel} AGL:{agl} RSSI:{rssi} SNR:{snr} T:{time_s} Batt:{batt}"
+    print(logString)
+    logFilePro.write(logString)
+    logFilePro.write("\n")
     
     return payload
 
@@ -320,6 +329,7 @@ if __name__ == "__main__":
 
     timestr = time.strftime("%Y%m%d-%H%M%S")
     logFileRaw = open(timestr+'_RAW.txt', 'w')
+    logFilePro = open(timestr+'_PRO.txt', 'w', 1)
     #logFile.close()
 
     try:
@@ -394,10 +404,11 @@ if __name__ == "__main__":
                 
                 # split off the alt GPS data
                 parts = data2.split("G")
-                GPS2 = parts[1]
-                # print(f"G: {GPS2}")
-                send_data(pack_AGPS('G'+GPS2+radioData), conn)
-                time.sleep(0.05)
+                if len(parts) > 1:
+                    GPS2 = parts[1]
+                    # print(f"G: {GPS2}")
+                    send_data(pack_AGPS('G'+GPS2+radioData), conn)
+                    time.sleep(0.05)
                 
                 # the raven and or eggtimer to parse
                 data2 = parts[0]

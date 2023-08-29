@@ -1,66 +1,42 @@
 [
   {
-    "screen": "GPS",
-    "target": "M",
-    "floated": true,
-    "top": 108,
-    "left": 1228,
-    "zIndex": 0
-  },
-  {
     "screen": "RAVEN",
     "target": "M",
     "floated": true,
-    "top": 703,
-    "left": -4,
+    "top": 825,
+    "left": -8,
     "zIndex": 0
   },
   {
     "screen": "ATTITUDE",
     "target": "M",
     "floated": true,
-    "top": -5,
+    "top": -6,
     "left": -7,
-    "zIndex": 0
-  },
-  {
-    "screen": "MAIN",
-    "target": "M",
-    "floated": true,
-    "top": 808,
-    "left": 1859,
-    "zIndex": 0
-  },
-  {
-    "screen": "NAV",
-    "target": "M",
-    "floated": true,
-    "top": 107,
-    "left": 2233,
     "zIndex": 0
   },
   {
     "screen": "PLOT",
     "target": "M",
     "floated": true,
-    "top": 109,
-    "left": -3,
-    "zIndex": 0
-  },
-  {
-    "screen": "RADIO",
-    "target": "M",
-    "floated": true,
-    "top": 105,
-    "left": 1851,
+    "top": 233,
+    "left": -7,
     "zIndex": 0
   },
   {
     "screen": "GPS2",
     "target": "M",
     "floated": true,
-    "top": 704,
-    "left": 1231,
+    "top": 825,
+    "left": 1225,
+    "zIndex": 0
+  },
+  {
+    "screen": "GPS1",
+    "target": "M",
+    "floated": true,
+    "top": 232,
+    "left": 1225,
     "zIndex": 0
   }
 ]
