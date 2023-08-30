@@ -90,7 +90,7 @@ TELEMETRY M EGG LITTLE_ENDIAN "Quantum Telemetry"
     LIMITS DEFAULT 3 ENABLED 2 4 15 15
   APPEND_ITEM    E_BATT        32      INT       "Quantum Battery"
     GENERIC_READ_CONVERSION_START
-      (value / 10.0) - 1.0  # Convert the value by a scale factor
+      (value / 10.0) - 1.0
     GENERIC_READ_CONVERSION_END
     UNITS Voltage V
     LIMITS DEFAULT 3 ENABLED 7.2 7.4 8.5 8.5
