@@ -14,7 +14,7 @@ HOST    = "127.0.0.1"  # Standard loopback interface address (localhost)
 PORT    = 23200        # Port to listen on (non-privileged ports are > 1023)
 GPS_ID  = 'FthrWt04072'
 Serial1 = '/dev/cu.usbserial-D201105P' # for the Featherweight GS
-Serial2 = '/dev/cu.usbserial-4' # for the loRa receiver
+Serial2 = '/dev/cu.usbserial-1' # for the loRa receiver
 
 def is_garbled(s):
     """ Returns True if string is a number. """
@@ -124,7 +124,7 @@ def pack_FW_GPS(data):
         print("Tracker packet too short:", len(parts))
         return 0
 
-    parts = parts[4 : 16]
+    parts = parts[4:16]
     # print("parts:", parts)
     if any(is_garbled(p) for p in parts):
         # one or more numbers are corrupted
@@ -389,7 +389,8 @@ if __name__ == "__main__":
 
                 print(f"\nData2: {data2}")
 
-                # there are three scenarios
+                # there are four scenarios
+                # GPS only
                 # Eggtimer only 
                 # Raven only
                 # Dual packet with data from both computers
@@ -398,7 +399,7 @@ if __name__ == "__main__":
                 radioData = data2[-10:]
                 # print(f"Radio: {radioData}")
 
-                # the raven, eggtime, and alt GPS data
+                # the raven, eggtimer, and alt GPS data
                 data2 = data2[0:-10]
                 # print(f"R,E,G: {data2}")
                 
@@ -413,20 +414,22 @@ if __name__ == "__main__":
                 # the raven and or eggtimer to parse
                 data2 = parts[0]
                 # print(f"R,E: {data2}")
+                # there are more data to look at
+                if len(data2) > 7:
 
-                # begins with E = eggtimer only
-                if data2[6] == 'E': send_data(pack_EGG(data2+radioData), conn)
+                    # begins with E = eggtimer only
+                    if data2[6] == 'E': send_data(pack_EGG(data2+radioData), conn)
 
-                # begins with R (raven) but may be dual packet
-                if (data2[6] == 'R') and ('E' in data2):
-                    parts = data2.split('E')
-                    dataRav =       parts[0] + radioData
-                    dataEgg = 'E' + parts[1] + radioData
-                    # print(f"Rav data: {dataRav}")
-                    # print(f"Egg data: {dataEgg}")
-                    send_data(pack_RAV(dataRav), conn)
-                    time.sleep(0.05)
-                    send_data(pack_EGG(dataEgg), conn)
-                elif (data2[6] == 'R'):
-                    time.sleep(0.05)
-                    send_data(pack_RAV(data2+radioData), conn)
+                    # begins with R (raven) but may be dual packet
+                    if (data2[6] == 'R') and ('E' in data2):
+                        parts = data2.split('E')
+                        dataRav =       parts[0] + radioData
+                        dataEgg = 'E' + parts[1] + radioData
+                        # print(f"Rav data: {dataRav}")
+                        # print(f"Egg data: {dataEgg}")
+                        send_data(pack_RAV(dataRav), conn)
+                        time.sleep(0.05)
+                        send_data(pack_EGG(dataEgg), conn)
+                    elif (data2[6] == 'R'):
+                        time.sleep(0.05)
+                        send_data(pack_RAV(data2+radioData), conn)

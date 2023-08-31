@@ -1,14 +1,9 @@
 /*
-
-Firmware for Heltec Wireless Stick (LoRa)
-
-Connects to Arduino MKRWAN 1310 and sends LoRa data to serial 
-
-Copyright 2023 Jan T. Liphardt
-JTLiphardt@gmail.com
-
-No warranties, use at your own risk.
-
+  Firmware for Heltec Wireless Stick (LoRa)
+  Connects to Arduino MKRWAN 1310 and sends LoRa data to serial 
+  Copyright 2023 Jan T. Liphardt
+  JTLiphardt@gmail.com
+  No warranties, use at your own risk.
 */
 
 #include "LoRaWan_APP.h"
@@ -126,7 +121,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 
     Radio.Sleep();
     
-    //Serial.printf("Header Bytes: %d %d\n",payload[0],payload[1]);
+    //Serial.printf("Header Bytes: %d\n",payload[0]);
     
     if (payload[0] == myAddress) {
       // this payload is for us

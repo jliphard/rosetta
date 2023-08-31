@@ -15,8 +15,6 @@
 
 #define SerialDebug Serial1
 
-int counterRav = 0;
-int counterEgg = 0;
 int counterMain = 0;
 
 char buf[64];
@@ -26,12 +24,14 @@ uint32_t state;
 
 bool haveNewRavData = false;
 bool haveNewEggData = false;
+bool haveNewGpsData = false;
 
 char rav_dp[200]       = "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
 char rav_dp_final[200] = "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@";
 
 String EggData = "";
 String RavData = "";
+String GpsData = "";
 
 long frequency   = 910700000; // change this to something quiet - e.g. this is Channel 42 (910.700 MHz)
 byte myAddress   = 0xBC;  
@@ -89,7 +89,7 @@ void setup() {
   pinPeripheral(1, PIO_SERCOM);
 
   if (UsbH.Init())
-    SerialDebug.println("USB host did not start");
+    SerialDebug.println("USB host FAILED to start");
   else   
     SerialDebug.println("USB host started");
 
@@ -126,12 +126,12 @@ void setup() {
 
   // The Code Rate is the degree of redundancy implemented by the forward error correction (FEC) used to detect errors and correct them. 
   // Supported values are between 5 and 8, these correspond to coding rates of 4/5 and 4/8. The coding rate numerator is fixed at 4.
-  // Coding Rate | CRC Rate | Overhead Ratio
+  // Coding Rate | CRC Rate | Overhead Ratio
   // ----------------------------------------
-  // 1           |  4/5     |   1.25
-  // 2           |  4/6     |   1.5
-  // 3           |  4/7     |   1.75
-  // 4           |  4/8     |   2
+  // 1 | 4/5 | 1.25
+  // 2 | 4/6 | 1.5
+  // 3 | 4/7 | 1.75
+  // 4 | 4/8 | 2
   LoRa.setCodingRate4(8);
 
   if (!GPS.begin()) {
@@ -150,6 +150,7 @@ void loop() {
 
   EggData = "";
   RavData = "";
+  GpsData = "";
 
   digitalWrite(LED_BUILTIN, HIGH);
 
@@ -165,7 +166,6 @@ void loop() {
     EggData = Serial2.readString();
     if(EggData.length() > 0) {
       EggData = "E" + EggData;
-      counterEgg++;
       haveNewEggData = true;
     }
   }
@@ -176,8 +176,8 @@ void loop() {
     SerialDebug.println("Waiting for GPS");
   }
 
-  float latitude   = GPS.latitude();         // We are always on the Northern hemisphere
-  float longitude  = GPS.longitude() * -1.0; // We are always near -122 W
+  float latitude  = GPS.latitude();         // We are always on the Northern hemisphere
+  float longitude = GPS.longitude() * -1.0; // We are always near -122 W
 
   SerialDebug.print("Location: ");
   SerialDebug.print(latitude);
@@ -189,11 +189,12 @@ void loop() {
 
   // remove the degrees and sign and convert to a long
   // downsample to 5 decimal places aka 1.1 m accuracy 
-  long latLocal = (latitude  - long(latitude) ) * 100000L;
+  long latLocal = (latitude  - long(latitude )) * 100000L;
   long lonLocal = (longitude - long(longitude)) * 100000L;
 
   char gps[15];
   sprintf(gps, "G%d:%d:%d\0", latLocal, lonLocal, altitude);
+  GpsData = String(gps);
   SerialDebug.print("Backup GPS: ");
   SerialDebug.println(gps);
 
@@ -306,12 +307,6 @@ void loop() {
         //SerialDebug.write(buf, rcvd);
         //SerialDebug.println("");
 
-        // SerialDebug.print("Raven Part 3 raw: ");
-        // for (j = 0; j < rcvd; j++) {
-        //   SerialDebug.print(buf[j], DEC);
-        // }
-        // SerialDebug.println("");
-
         for (i = payloadLength, j = 0; j < rcvd; j++) {
           if (isAlpha(buf[j])) { 
             // skip letters
@@ -335,9 +330,6 @@ void loop() {
         // chop off spurious junk from previous data
         // the last two characters are always 1310 aka CR and LF
         rav_dp_final[i-2] = '\0';
-
-        //SerialDebug.print("Ready to parse:");
-        //SerialDebug.println(String(rav_dp_final));
 
         // parse the string
         char *token;
@@ -385,7 +377,6 @@ void loop() {
         char buffer[22];
         sprintf(buffer, "R%d:%d:%d:%d:%d:%d:%d\0", time, accel400, accel16, batt, roll, vel, agl);
         RavData = String(buffer);
-        counterRav++;
         haveNewRavData = true;
       }
 
@@ -405,21 +396,20 @@ void loop() {
     SerialDebug.println("Final Egg Data: " + EggData + " Length: " + EggData.length());
   }
 
-  if (haveNewRavData || haveNewEggData) {
-    int LoRaState = LoRa.beginPacket();
-    if (LoRaState == 1) {
-      //SerialDebug.print("LORA: Sending packet: ");
-      //LoRa.beginPacket();
-      LoRa.write(destination);          
-      if (haveNewRavData)
-        LoRa.print(RavData);
-      if (haveNewEggData)
-        LoRa.print(EggData);
-      LoRa.print(String(gps));
-      LoRa.endPacket(true);
-    } else if (LoRaState == 0) {
-      SerialDebug.println("LORA DATA LOSS: Radio not ready");
-    }
+  SerialDebug.println("Final Gps Data: " + GpsData + " Length: " + GpsData.length());
+
+  int LoRaState = LoRa.beginPacket();
+  if (LoRaState == 1) {
+    LoRa.write(destination);          
+    if (haveNewRavData)
+      LoRa.print(RavData);
+    if (haveNewEggData)
+      LoRa.print(EggData);
+    LoRa.print(GpsData);
+    LoRa.endPacket(true);
+  } else if (LoRaState == 0) {
+    SerialDebug.println("LORA DATA LOSS: Radio not ready");
   }
+
 
 }
