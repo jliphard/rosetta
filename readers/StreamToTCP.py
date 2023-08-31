@@ -14,7 +14,7 @@ HOST    = "127.0.0.1"  # Standard loopback interface address (localhost)
 PORT    = 23200        # Port to listen on (non-privileged ports are > 1023)
 GPS_ID  = 'FthrWt04072'
 Serial1 = '/dev/cu.usbserial-D201105P' # for the Featherweight GS
-Serial2 = '/dev/cu.usbserial-1' # for the loRa receiver
+Serial2 = '/dev/cu.usbserial-0001' # for the loRa receiver
 
 def is_garbled(s):
     """ Returns True if string is a number. """
@@ -172,7 +172,7 @@ def pack_AGPS(data):
 
     parts = data.split(":")
     # print("parts:", len(parts))
-    if(len(parts) < 3):
+    if(len(parts) < 5):
         print("AGPS Packet too short or garbled:", data)
         return 0
 
