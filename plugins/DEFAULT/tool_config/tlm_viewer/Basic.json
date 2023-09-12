@@ -1,42 +1,42 @@
 [
   {
-    "screen": "RAVEN",
+    "screen": "GPS1",
     "target": "M",
     "floated": true,
-    "top": 825,
-    "left": -8,
-    "zIndex": 0
-  },
-  {
-    "screen": "ATTITUDE",
-    "target": "M",
-    "floated": true,
-    "top": -6,
-    "left": -7,
-    "zIndex": 0
-  },
-  {
-    "screen": "PLOT",
-    "target": "M",
-    "floated": true,
-    "top": 233,
-    "left": -7,
+    "top": -4,
+    "left": 1229,
     "zIndex": 0
   },
   {
     "screen": "GPS2",
     "target": "M",
     "floated": true,
-    "top": 825,
-    "left": 1225,
+    "top": 592,
+    "left": 1229,
     "zIndex": 0
   },
   {
-    "screen": "GPS1",
+    "screen": "PLOT",
     "target": "M",
     "floated": true,
-    "top": 232,
-    "left": 1225,
+    "top": -4,
+    "left": -3,
+    "zIndex": 0
+  },
+  {
+    "screen": "ATTITUDE",
+    "target": "M",
+    "floated": true,
+    "top": -4,
+    "left": 1855,
+    "zIndex": 0
+  },
+  {
+    "screen": "RAVEN",
+    "target": "M",
+    "floated": true,
+    "top": 589,
+    "left": -1,
     "zIndex": 0
   }
 ]

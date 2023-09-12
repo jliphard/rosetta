@@ -1,0 +1,44 @@
+Type 13 T:2214.117 RSSI_1:-79 RSSI_2:-100 SNR_1:5 SNR_2:-11 BATT:4.097
+Type 11 T:2215.144 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:63 vv:0 fix:3 satTotal:29
+Type 13 T:2215.117 RSSI_1:-80 RSSI_2:-99 SNR_1:8 SNR_2:-11 BATT:4.102
+Type 11 T:2216.145 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:6 vv:0 fix:3 satTotal:29
+Type 13 T:2216.117 RSSI_1:-79 RSSI_2:-98 SNR_1:8 SNR_2:-10 BATT:4.102
+Type 11 T:2217.145 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:-91 vv:0 fix:3 satTotal:29
+Type 13 T:2217.118 RSSI_1:-79 RSSI_2:-100 SNR_1:7 SNR_2:-11 BATT:4.098
+Type 11 T:2218.145 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:-62 vv:0 fix:3 satTotal:29
+Type 13 T:2218.116 RSSI_1:-79 RSSI_2:-100 SNR_1:7 SNR_2:-11 BATT:4.098
+Type 11 T:2219.143 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:-89 vv:0 fix:3 satTotal:29
+Type 13 T:2219.117 RSSI_1:-79 RSSI_2:-98 SNR_1:8 SNR_2:-10 BATT:4.098
+Type 11 T:2220.144 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:80 vv:0 fix:3 satTotal:29
+Type 13 T:2220.118 RSSI_1:-79 RSSI_2:-99 SNR_1:7 SNR_2:-11 BATT:4.098
+Type 11 T:2221.145 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:7 vv:0 fix:3 satTotal:29
+Type 13 T:2221.117 RSSI_1:-79 RSSI_2:-94 SNR_1:7 SNR_2:-6 BATT:4.098
+Type 11 T:2222.144 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:-18 vv:0 fix:3 satTotal:29
+Type 13 T:2222.116 RSSI_1:-78 RSSI_2:-98 SNR_1:8 SNR_2:-10 BATT:4.083
+Type 11 T:2223.144 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:-17 vv:0 fix:3 satTotal:29
+Type 13 T:2223.117 RSSI_1:-79 RSSI_2:-99 SNR_1:8 SNR_2:-10 BATT:4.083
+Type 11 T:2224.144 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:0 vv:0 fix:3 satTotal:29
+Type 13 T:2224.117 RSSI_1:-79 RSSI_2:-100 SNR_1:8 SNR_2:-11 BATT:4.099
+Type 11 T:2225.144 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:115 vv:0 fix:3 satTotal:29
+Type 13 T:2225.117 RSSI_1:-80 RSSI_2:-83 SNR_1:8 SNR_2:5 BATT:4.099
+Type 11 T:2226.144 lat:35.34776 lon:-117.80913 alt:2054 hv:0 hdir:21 vv:0 fix:3 satTotal:29
+Type 13 T:2226.116 RSSI_1:-79 RSSI_2:-99 SNR_1:8 SNR_2:-10 BATT:4.101
+Type 11 T:2227.143 lat:35.34776 lon:-117.80913 alt:2053 hv:0 hdir:-63 vv:0 fix:3 satTotal:29
+Type 13 T:2227.116 RSSI_1:-79 RSSI_2:-99 SNR_1:8 SNR_2:-10 BATT:4.101
+Type 11 T:2228.143 lat:35.34776 lon:-117.80913 alt:2053 hv:0 hdir:-157 vv:0 fix:3 satTotal:29
+Type 13 T:2228.118 RSSI_1:-79 RSSI_2:-99 SNR_1:8 SNR_2:-10 BATT:4.101
+Type 11 T:2229.145 lat:35.34776 lon:-117.80913 alt:2053 hv:0 hdir:42 vv:0 fix:3 satTotal:29
+Type 13 T:2229.118 RSSI_1:-80 RSSI_2:-85 SNR_1:8 SNR_2:5 BATT:4.101
+Type 11 T:2230.145 lat:35.34776 lon:-117.80913 alt:2053 hv:0 hdir:-170 vv:0 fix:3 satTotal:29
+Type 13 T:2230.116 RSSI_1:-78 RSSI_2:-100 SNR_1:8 SNR_2:-11 BATT:4.097
+Type 11 T:2231.144 lat:35.34776 lon:-117.80913 alt:2053 hv:0 hdir:-173 vv:0 fix:3 satTotal:29
+Type 13 T:2231.116 RSSI_1:-79 RSSI_2:-100 SNR_1:8 SNR_2:-11 BATT:4.097
+Type 11 T:2232.144 lat:35.34776 lon:-117.80913 alt:2052 hv:0 hdir:178 vv:0 fix:3 satTotal:29
+Type 13 T:2232.126 RSSI_1:-79 RSSI_2:-99 SNR_1:8 SNR_2:-11 BATT:4.097
+Type 11 T:2233.153 lat:35.34776 lon:-117.80913 alt:2052 hv:0 hdir:-173 vv:0 fix:3 satTotal:29
+Type 13 T:2233.118 RSSI_1:-79 RSSI_2:-87 SNR_1:8 SNR_2:1 BATT:4.078
+Type 11 T:2234.145 lat:35.34776 lon:-117.80913 alt:2052 hv:0 hdir:160 vv:0 fix:3 satTotal:29
+Type 13 T:2234.117 RSSI_1:-80 RSSI_2:-99 SNR_1:7 SNR_2:-10 BATT:4.078
+Type 11 T:2235.144 lat:35.34776 lon:-117.80913 alt:2052 hv:0 hdir:135 vv:0 fix:3 satTotal:29
+Type 13 T:2235.116 RSSI_1:-78 RSSI_2:-99 SNR_1:8 SNR_2:-10 BATT:4.097
+Type 11 T:2236.144 lat:35.34776 lon:-117.80913 alt:2052 hv:0 hdir:58 vv:0 fix:3 satTotal:29

@@ -1,5 +1,5 @@
 {
-  "name": "openc3-cosmos-hub-1.0.123.gem__20230829221347",
+  "name": "openc3-cosmos-hub-1.0.123.gem__20230902060906",
   "variables": {
     "data_target_name": "M"
   },
@@ -13,5 +13,5 @@
     "MAP_TARGET <%= data_target_name %>"
   ],
   "needs_dependencies": false,
-  "updated_at": 1693442861918246095
+  "updated_at": 1693634946407257209
 }
